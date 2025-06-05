@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Tetris with SDL3",
+      "type": "shell",
+      "command": "gcc",
+      "args": [
+        "tetris.c",
+        "-o",
+        "tetris.exe",
+        "-IC:/SDL3/include",
+        "-IC:/SDL2_mixer/include",
+        "-LC:/SDL3/lib",
+        "-LC:/SDL2_mixer/lib",
+        "-lSDL3",
+        "-lSDL2_mixer",
+        "-lwinmm"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "detail": "Compila Tetris con SDL3 e SDL2_mixer"
+    }
+  ]
+}
