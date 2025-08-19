@@ -1,0 +1,26 @@
+CXX = g++
+CXXFLAGS = -Wall -Wextra -std=c++14 -O2 \
+    -I/usr/include/SDL2 \
+    -pthread -D_REENTRANT
+
+LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2_ttf
+
+SRC_CPP = tetris.cpp
+OBJ_CPP = $(SRC_CPP:.cpp=.o)
+TARGET_CPP = tetris++
+
+all: $(TARGET_CPP)
+
+$(TARGET_CPP): $(OBJ_CPP)
+	$(CXX) $(OBJ_CPP) -o $@ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+run: $(TARGET_CPP)
+	./$(TARGET_CPP)
+
+clean:
+	rm -f $(OBJ_CPP) $(TARGET_CPP)
+
+.PHONY: all run clean
