@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" fill="#0f0f23"/>
+  
+  <!-- Tetris I-piece -->
+  <rect x="16" y="12" width="8" height="8" fill="#64ffda"/>
+  <rect x="24" y="12" width="8" height="8" fill="#64ffda"/>
+  <rect x="32" y="12" width="8" height="8" fill="#64ffda"/>
+  <rect x="40" y="12" width="8" height="8" fill="#64ffda"/>
+  
+  <!-- Tetris L-piece -->
+  <rect x="16" y="24" width="8" height="8" fill="#2196f3"/>
+  <rect x="16" y="32" width="8" height="8" fill="#2196f3"/>
+  <rect x="16" y="40" width="8" height="8" fill="#2196f3"/>
+  <rect x="24" y="40" width="8" height="8" fill="#2196f3"/>
+  
+  <!-- Tetris O-piece -->
+  <rect x="36" y="24" width="8" height="8" fill="#ffeb3b"/>
+  <rect x="44" y="24" width="8" height="8" fill="#ffeb3b"/>
+  <rect x="36" y="32" width="8" height="8" fill="#ffeb3b"/>
+  <rect x="44" y="32" width="8" height="8" fill="#ffeb3b"/>
+  
+  <!-- Tetris S-piece -->
+  <rect x="32" y="44" width="8" height="8" fill="#4caf50"/>
+  <rect x="40" y="44" width="8" height="8" fill="#4caf50"/>
+  <rect x="40" y="52" width="8" height="8" fill="#4caf50"/>
+  <rect x="48" y="52" width="8" height="8" fill="#4caf50"/>
+</svg>

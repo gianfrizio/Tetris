@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Tetris Classic - Gioca Online Gratis</title>
+    <meta name="description" content="Gioca al classico Tetris online gratis! Tetris moderno in WebAssembly con grafica SDL2, audio e controlli perfetti.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta property="og:title" content="🎮 Tetris Classic - Gioca Online Gratis">
+    <meta property="og:description" content="Il leggendario puzzle game Tetris ora disponibile gratis nel browser!">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a40 50%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Particelle animate di sfondo */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #64ffda;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3, #9c27b0);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(100, 255, 218, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0bec5;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .game-info {
+            font-size: 0.9rem;
+            color: #78909c;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        /* Container del gioco */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        .game-wrapper {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .game-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #64ffda, #2196f3, #9c27b0, #64ffda);
+            border-radius: 22px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* Status e controlli personalizzati */
+        .game-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            color: #78909c;
+            display: block;
+        }
+
+        .status-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #64ffda;
+        }
+
+        /* Canvas styling */
+        #canvas {
+            border-radius: 12px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Controlli */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.8rem 1.2rem;
+            background: rgba(100, 255, 218, 0.15);
+            border-radius: 10px;
+            border: 2px solid rgba(100, 255, 218, 0.4);
+            transition: all 0.3s ease;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .control-item:hover {
+            background: rgba(100, 255, 218, 0.25);
+            border-color: rgba(100, 255, 218, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.2);
+        }
+
+        .control-key {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(100, 255, 218, 0.3);
+            min-width: 35px;
+            text-align: center;
+        }
+
+        .control-desc {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Loading personalizzato */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 35, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .tetris-loader {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 2rem;
+        }
+
+        .tetris-block {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+            animation: tetrisFall 1.5s ease-in-out infinite;
+        }
+
+        .tetris-block:nth-child(1) { background: #64ffda; animation-delay: 0s; }
+        .tetris-block:nth-child(2) { background: #2196f3; animation-delay: 0.2s; }
+        .tetris-block:nth-child(3) { background: #9c27b0; animation-delay: 0.4s; }
+        .tetris-block:nth-child(4) { background: #ff5722; animation-delay: 0.6s; }
+
+        @keyframes tetrisFall {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(20px); }
+        }
+
+        .loading-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #64ffda;
+            margin-bottom: 1rem;
+        }
+
+        .loading-progress {
+            color: #78909c;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #546e7a;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #64ffda;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #00bcd4;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .game-wrapper {
+                padding: 1rem;
+                margin: 0 0.5rem 1rem;
+            }
+            
+            .controls {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+                padding: 1rem;
+            }
+            
+            .control-item {
+                justify-content: center;
+                padding: 1rem;
+                min-width: auto;
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .control-key {
+                font-size: 1.1rem;
+                padding: 0.5rem 0.8rem;
+                min-width: 50px;
+            }
+            
+            .control-desc {
+                font-size: 0.9rem;
+            }
+            
+            .start-title {
+                font-size: clamp(2rem, 12vw, 4rem);
+            }
+            
+            .play-button {
+                padding: 1.2rem 3rem;
+                font-size: 1.3rem;
+            }
+            
+            .game-info {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-item {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 1rem 1.5rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .game-wrapper {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Schermata iniziale */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a40 50%, #2d1b69 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }
+
+        .start-screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .start-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .start-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3, #9c27b0);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 50px rgba(100, 255, 218, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .start-subtitle {
+            font-size: 1.5rem;
+            color: #b0bec5;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #64ffda, #2196f3);
+            border: none;
+            padding: 1.5rem 4rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f0f23;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 10px 30px rgba(100, 255, 218, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .play-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 20px 40px rgba(100, 255, 218, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .play-button:hover::before {
+            left: 100%;
+        }
+
+        .play-button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .start-instructions {
+            margin-top: 2rem;
+            color: #78909c;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .preview-blocks {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 2rem 0;
+            opacity: 0.7;
+        }
+
+        .preview-block {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            animation: blockPulse 2s ease-in-out infinite;
+        }
+
+        .preview-block:nth-child(1) { background: #64ffda; animation-delay: 0s; }
+        .preview-block:nth-child(2) { background: #2196f3; animation-delay: 0.3s; }
+        .preview-block:nth-child(3) { background: #9c27b0; animation-delay: 0.6s; }
+        .preview-block:nth-child(4) { background: #ff5722; animation-delay: 0.9s; }
+        .preview-block:nth-child(5) { background: #4caf50; animation-delay: 1.2s; }
+
+        @keyframes blockPulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Nascondi il gioco inizialmente */
+        .game-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .game-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Mobile Instructions */
+        .mobile-instructions {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .mobile-instructions h3 {
+            color: #64ffda;
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .touch-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .touch-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .touch-gesture {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #64ffda;
+        }
+
+        .touch-action {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        /* Show mobile elements on small screens */
+        @media (max-width: 768px) {
+            .mobile-instructions {
+                display: block;
+            }
+            
+            .mobile-only {
+                display: flex;
+            }
+        }
+
+        /* Nascondi elementi Emscripten originali */
+        #emscripten_logo,
+        #spinner,
+        #progress,
+        #controls,
+        #output {
+            display: none !important;
+        }
+
+        #status {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particelle animate di sfondo -->
+    <div class="bg-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 3.5s;"></div>
+    </div>
+
+    <!-- Schermata iniziale con pulsante PLAY -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-content">
+            <h1 class="start-title">🎮 TETRIS</h1>
+            <p class="start-subtitle">Il Leggendario Puzzle Game</p>
+            
+            <div class="preview-blocks">
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+            </div>
+            
+            <button class="play-button" id="playButton">
+                ▶️ GIOCA ORA
+            </button>
+            
+            <div class="start-instructions">
+                <p><strong>Come si gioca:</strong></p>
+                <p>Usa le frecce per muovere e ruotare i blocchi<br>
+                Completa le righe per guadagnare punti<br>
+                Più veloce vai, più punti ottieni!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay personalizzato -->
+    <div class="loading-overlay" id="customLoading">
+        <div class="tetris-loader">
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+        </div>
+        <div class="loading-text">TETRIS</div>
+        <div class="loading-progress" id="loadingProgress">Caricamento del gioco...</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 class="title">🎮 TETRIS</h1>
+        <p class="subtitle">Il Classico Puzzle Game</p>
+        <div class="game-info">
+            Gioca al leggendario Tetris direttamente nel browser! Versione moderna compilata in WebAssembly 
+            con grafica SDL2, audio coinvolgente e controlli reattivi. Nessun download richiesto.
+        </div>
+    </div>
+
+    <!-- Container del gioco -->
+    <div class="game-container">
+        <div class="game-wrapper">
+            <!-- Status del gioco -->
+            <div class="game-status">
+                <div class="status-item">
+                    <span class="status-label">Punteggio</span>
+                    <span class="status-value" id="scoreDisplay">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Livello</span>
+                    <span class="status-value" id="levelDisplay">1</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Linee</span>
+                    <span class="status-value" id="linesDisplay">0</span>
+                </div>
+            </div>
+
+            <!-- Canvas del gioco -->
+            <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+            
+            <!-- Controlli -->
+            <div class="controls">
+                <div class="control-item">
+                    <div class="control-key">← →</div>
+                    <div class="control-desc">Movimento</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">↑</div>
+                    <div class="control-desc">Ruota</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">↓</div>
+                    <div class="control-desc">Caduta veloce</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">ESC</div>
+                    <div class="control-desc">Pausa</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">INVIO</div>
+                    <div class="control-desc">Ricomincia</div>
+                </div>
+                <div class="control-item mobile-only">
+                    <div class="control-key">📱</div>
+                    <div class="control-desc">Touch/Swipe</div>
+                </div>
+            </div>
+            
+            <!-- Istruzioni Mobile -->
+            <div class="mobile-instructions">
+                <h3>📱 Controlli Touch</h3>
+                <div class="touch-controls">
+                    <div class="touch-item">
+                        <span class="touch-gesture">👆 Tap</span>
+                        <span class="touch-action">Ruota pezzo</span>
+                    </div>
+                    <div class="touch-item">
+                        <span class="touch-gesture">👈 👉 Swipe</span>
+                        <span class="touch-action">Muovi lateralmente</span>
+                    </div>
+                    <div class="touch-item">
+                        <span class="touch-gesture">👇 Swipe giù</span>
+                        <span class="touch-action">Caduta veloce</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Creato con ❤️ utilizzando C++, SDL2 e WebAssembly</p>
+        <p>© 2025 - <a href="https://github.com/gianfrizio/Tetris" target="_blank">Codice sorgente su GitHub</a></p>
+    </div>
+
+    <!-- Script Emscripten (modificato) -->
+    <script>
+        // Elementi DOM
+        var startScreen = document.getElementById('startScreen');
+        var playButton = document.getElementById('playButton');
+        var customLoading = document.getElementById('customLoading');
+        var loadingProgress = document.getElementById('loadingProgress');
+        var gameContainer = document.querySelector('.game-container');
+        
+        var gameReady = false;
+        var gameStarted = false;
+        
+        // Nascondi il loading inizialmente
+        customLoading.style.display = 'none';
+        
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            
+            print: function(...args) {
+                console.log(...args);
+            },
+            
+            setStatus: function(text) {
+                // Carica il gioco silenziosamente in background
+                if (text) {
+                    console.log('Game status:', text);
+                    if (text.includes('complete') || !text) {
+                        gameReady = true;
+                        console.log('Game is ready!');
+                    }
+                } else {
+                    gameReady = true;
+                    console.log('Game ready (no status)');
+                }
+                
+                // Se il gioco è stato avviato dall'utente, mostra i progressi
+                if (gameStarted) {
+                    if (text && text.includes('Downloading')) {
+                        loadingProgress.textContent = 'Download del gioco...';
+                    } else if (text && text.includes('Preparing')) {
+                        loadingProgress.textContent = 'Preparazione...';
+                    } else {
+                        loadingProgress.textContent = 'Avvio del gioco...';
+                    }
+                }
+            },
+            
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                console.log('Dependencies left:', left);
+                if (left === 0) {
+                    gameReady = true;
+                }
+            }
+        };
+
+        // Gestione pulsante PLAY
+        playButton.addEventListener('click', function() {
+            gameStarted = true;
+            
+            // Nascondi schermata iniziale
+            startScreen.classList.add('hidden');
+            
+            // Mostra loading
+            customLoading.style.display = 'flex';
+            customLoading.style.opacity = '1';
+            loadingProgress.textContent = 'Avvio del gioco...';
+            
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                
+                // Aspetta che il gioco sia caricato, poi avvialo
+                setTimeout(() => {
+                    customLoading.style.opacity = '0';
+                    setTimeout(() => {
+                        customLoading.style.display = 'none';
+                        gameContainer.classList.add('visible');
+                        
+                        // Avvia il gioco chiamando la funzione C++
+                        try {
+                            if (typeof Module !== 'undefined' && Module._startTetrisGame) {
+                                Module._startTetrisGame();
+                                console.log('Game started via C++ function!');
+                            } else {
+                                console.log('Module not ready yet, retrying...');
+                                // Riprova dopo un po'
+                                setTimeout(() => {
+                                    if (typeof Module !== 'undefined' && Module._startTetrisGame) {
+                                        Module._startTetrisGame();
+                                        console.log('Game started via C++ function (retry)!');
+                                    }
+                                }, 500);
+                            }
+                        } catch(e) {
+                            console.error('Error starting game:', e);
+                        }
+                    }, 500);
+                }, 1000);
+            }, 800);
+        });
+
+        // Gestione errori personalizzata
+        window.onerror = function(event) {
+            if (gameStarted) {
+                loadingProgress.textContent = 'Errore nel caricamento del gioco';
+                console.error('Game loading error:', event);
+            }
+        };
+        
+        // Effetto di transizione per il loading
+        customLoading.style.transition = 'opacity 0.5s ease-in-out';
+        
+        // Touch controls for mobile devices
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        const minSwipeDistance = 50;
+        const maxTapTime = 200;
+
+        function addTouchControls() {
+            const canvas = document.getElementById('canvas');
+            if (!canvas) return;
+
+            // Prevent default touch behaviors
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                touchStartTime = Date.now();
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                if (!gameStartRequested) return;
+
+                const touch = e.changedTouches[0];
+                const touchEndX = touch.clientX;
+                const touchEndY = touch.clientY;
+                const touchEndTime = Date.now();
+
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                const deltaTime = touchEndTime - touchStartTime;
+
+                // Tap (rotate)
+                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < maxTapTime) {
+                    // Simulate UP arrow key press for rotation
+                    simulateKeyPress('ArrowUp');
+                }
+                // Horizontal swipe (move left/right)
+                else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        // Swipe right
+                        simulateKeyPress('ArrowRight');
+                    } else {
+                        // Swipe left
+                        simulateKeyPress('ArrowLeft');
+                    }
+                }
+                // Vertical swipe down (fast drop)
+                else if (deltaY > minSwipeDistance) {
+                    simulateKeyPress('ArrowDown');
+                }
+            }, { passive: false });
+
+            // Prevent scrolling and zooming when touching the canvas
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        function simulateKeyPress(key) {
+            const keyEvent = new KeyboardEvent('keydown', {
+                key: key,
+                code: key,
+                bubbles: true
+            });
+            document.dispatchEvent(keyEvent);
+        }
+
+        // Initialize touch controls when game container becomes visible
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    if (gameContainer.classList.contains('visible')) {
+                        setTimeout(addTouchControls, 1000);
+                        observer.disconnect();
+                    }
+                }
+            });
+        });
+
+        observer.observe(gameContainer, { attributes: true });
+
+        // Precarica il gioco in background (senza avviarlo)
+        setTimeout(() => {
+            // Il gioco si caricherà ma non si avvierà automaticamente
+        }, 100);
+    </script>
+    
+    <!-- Script del gioco generato da Emscripten -->
+    <script async src="tetris.js"></script>
+</body>
+</html>

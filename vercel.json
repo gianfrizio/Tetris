@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "tetris-game",
+  "builds": [
+    { "src": "web/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/web/tetris_custom.html" },
+    { "src": "/(.*)", "dest": "/web/$1" }
+  ]
+}
