@@ -7,10 +7,28 @@ set -e  # Exit on error / Esci in caso di errore
 echo "🎮 Compilazione Tetris per il Web con Emscripten..."
 echo "🎮 Compiling Tetris for the Web with Emscripten..."
 
-# Controlla se emcc è installato / Check if emcc is installed
+# Attiva Emscripten dall'installazione in home / Activate Emscripten from home installation
+if [ -f "/home/gianfrizio/emsdk/emsdk_env.sh" ]; then
+    echo "🔧 Attivando Emscripten..."
+    echo "🔧 Activating Emscripten..."
+    source /home/gianfrizio/emsdk/emsdk_env.sh
+elif [ -f "/home/gianfrizio/emscripten/emsdk_env.sh" ]; then
+    echo "🔧 Attivando Emscripten..."
+    echo "🔧 Activating Emscripten..."
+    source /home/gianfrizio/emscripten/emsdk_env.sh
+else
+    echo "❌ Errore: Emscripten non trovato in /home/gianfrizio/"
+    echo "❌ Error: Emscripten not found in /home/gianfrizio/"
+    echo "   Verifica che emsdk sia installato e prova con:"
+    echo "   Check that emsdk is installed and try with:"
+    echo "   source /home/gianfrizio/emsdk/emsdk_env.sh"
+    exit 1
+fi
+
+# Controlla se emcc è ora disponibile / Check if emcc is now available
 if ! command -v emcc &> /dev/null; then
-    echo "❌ Errore: Emscripten non trovato. Installalo da https://emscripten.org/"
-    echo "❌ Error: Emscripten not found. Install it from https://emscripten.org/"
+    echo "❌ Errore: emcc non disponibile dopo l'attivazione"
+    echo "❌ Error: emcc not available after activation"
     exit 1
 fi
 
@@ -42,7 +60,7 @@ em++ tetris_web.cpp \
     -s WASM=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s INITIAL_MEMORY=33554432 \
-    -s EXPORTED_FUNCTIONS='["_main", "_startTetrisGame"]' \
+    -s EXPORTED_FUNCTIONS='["_main", "_startTetrisGame", "_getScore", "_getLevel", "_getLines", "_isGameRunning"]' \
     -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
     --preload-file web/audio@audio \
     --use-preload-plugins \

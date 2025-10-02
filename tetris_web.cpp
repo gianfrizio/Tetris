@@ -97,12 +97,13 @@ private:
     
     // Game state flags / Flag stato di gioco
     bool pause_game;         // Is game paused? / È in pausa il gioco?
+
+public:
+    // Public game statistics and state / Statistiche e stato di gioco pubblici
     bool game_over;          // Is game over? / È finito il gioco?
     int score;              // Current score / Punteggio attuale
     int level;              // Current level / Livello attuale
     int lines_cleared_total; // Total lines cleared / Totale linee eliminate
-
-public:
     // Constructor - initializes game state / Costruttore - inizializza stato di gioco
     TetrisGame() 
         : window(nullptr), renderer(nullptr), font(nullptr),
@@ -504,12 +505,8 @@ public:
         drawGrid();                    // Fixed blocks / Blocchi fissi
         drawPiece(current_piece);      // Falling piece / Pezzo in caduta
         
-        // Draw UI text / Disegna testo UI
-        Color white(255, 255, 255);
-        renderText("Score: " + std::to_string(score), 5, 5, white);
-        renderText("Level: " + std::to_string(level), 5, 30, white);
-        
         // Draw game state messages / Disegna messaggi stato di gioco
+        Color white(255, 255, 255);
         if (pause_game) {
             renderText("PAUSA (ESC)", WINDOW_WIDTH/2 - 60, WINDOW_HEIGHT/2 - 10, white);
         }
@@ -695,12 +692,44 @@ const std::array<Color, 7> TetrisGame::tetromino_colors {{
 }};
 
 #ifdef __EMSCRIPTEN__
-// Function to start the game from JavaScript / Funzione per avviare il gioco da JavaScript
+// Functions to interact with the game from JavaScript / Funzioni per interagire con il gioco da JavaScript
 extern "C" {
     void startTetrisGame() {
         if (TetrisGame::instance) {
             TetrisGame::instance->startGame();
         }
+    }
+    
+    // Get current score / Ottieni punteggio attuale
+    int getScore() {
+        if (TetrisGame::instance) {
+            return TetrisGame::instance->score;
+        }
+        return 0;
+    }
+    
+    // Get current level / Ottieni livello attuale
+    int getLevel() {
+        if (TetrisGame::instance) {
+            return TetrisGame::instance->level;
+        }
+        return 1;
+    }
+    
+    // Get total lines cleared / Ottieni totale linee eliminate
+    int getLines() {
+        if (TetrisGame::instance) {
+            return TetrisGame::instance->lines_cleared_total;
+        }
+        return 0;
+    }
+    
+    // Check if game is running / Controlla se il gioco è in esecuzione
+    bool isGameRunning() {
+        if (TetrisGame::instance) {
+            return !TetrisGame::instance->game_over && gameStartRequested;
+        }
+        return false;
     }
 }
 #endif

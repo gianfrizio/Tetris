@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>🎮 Tetris Classic - Gioca Online Gratis</title>
     <meta name="description" content="Gioca al classico Tetris online gratis! Tetris moderno in WebAssembly con grafica SDL2, audio e controlli perfetti.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -739,6 +739,7 @@
         
         var gameReady = false;
         var gameStarted = false;
+        var gameStartRequested = false;
         
         // Nascondi il loading inizialmente
         customLoading.style.display = 'none';
@@ -788,6 +789,7 @@
         // Gestione pulsante PLAY
         playButton.addEventListener('click', function() {
             gameStarted = true;
+            gameStartRequested = true;
             
             // Nascondi schermata iniziale
             startScreen.classList.add('hidden');
@@ -812,6 +814,9 @@
                             if (typeof Module !== 'undefined' && Module._startTetrisGame) {
                                 Module._startTetrisGame();
                                 console.log('Game started via C++ function!');
+                                
+                                // Avvia l'aggiornamento delle statistiche subito
+                                startStatsUpdater();
                             } else {
                                 console.log('Module not ready yet, retrying...');
                                 // Riprova dopo un po'
@@ -819,6 +824,9 @@
                                     if (typeof Module !== 'undefined' && Module._startTetrisGame) {
                                         Module._startTetrisGame();
                                         console.log('Game started via C++ function (retry)!');
+                                        
+                                        // Avvia l'aggiornamento delle statistiche anche nel retry
+                                        startStatsUpdater();
                                     }
                                 }, 500);
                             }
@@ -838,15 +846,148 @@
             }
         };
         
+        // Ferma l'aggiornamento statistiche quando la pagina viene chiusa
+        window.addEventListener('beforeunload', function() {
+            stopStatsUpdater();
+        });
+        
         // Effetto di transizione per il loading
         customLoading.style.transition = 'opacity 0.5s ease-in-out';
+        
+        // Sistema di aggiornamento statistiche del gioco
+        let statsUpdateInterval;
+        let lastScore = 0;
+        let lastLevel = 1;
+        let lastLines = 0;
+        
+        function startStatsUpdater() {
+            console.log('Starting stats updater...');
+            
+            // Aggiorna le statistiche ogni 100ms
+            statsUpdateInterval = setInterval(updateGameStats, 100);
+        }
+        
+        function updateGameStats() {
+            try {
+                // Prova a leggere le statistiche dal memory del gioco Emscripten
+                if (typeof Module !== 'undefined' && Module.HEAP32) {
+                    // Questi offset potrebbero dover essere aggiustati in base al codice C++
+                    // Per ora usiamo un approccio di parsing del canvas o eventi
+                    updateStatsFromCanvasOrEvents();
+                } else {
+                    // Fallback: aggiorna con valori simulati per test
+                    updateStatsSimulated();
+                }
+            } catch(e) {
+                console.error('Error updating stats:', e);
+            }
+        }
+        
+        function updateStatsFromCanvasOrEvents() {
+            // Usa le funzioni C++ esportate per ottenere le statistiche reali
+            if (typeof Module !== 'undefined' && Module._getScore && Module._getLevel && Module._getLines) {
+                try {
+                    updateStatsFromCpp();
+                } catch(e) {
+                    console.error('Error calling C++ functions:', e);
+                    updateStatsFallback();
+                }
+            } else {
+                updateStatsFallback();
+            }
+        }
+        
+        function updateStatsFromCpp() {
+            try {
+                // Debug: verifica se le funzioni esistono
+                console.log('Module functions available:', {
+                    getScore: typeof Module._getScore,
+                    getLevel: typeof Module._getLevel,
+                    getLines: typeof Module._getLines,
+                    isGameRunning: typeof Module._isGameRunning
+                });
+                
+                // Chiama le funzioni C++ per ottenere i valori reali
+                const currentScore = Module._getScore();
+                const currentLevel = Module._getLevel();
+                const currentLines = Module._getLines();
+                const gameRunning = Module._isGameRunning();
+                
+                console.log('Raw C++ values:', {currentScore, currentLevel, currentLines, gameRunning});
+                
+                // Aggiorna sempre i valori (rimuovo il controllo gameRunning per debug)
+                lastScore = currentScore;
+                lastLevel = currentLevel;
+                lastLines = currentLines;
+                
+                // Aggiorna gli elementi HTML
+                const scoreDisplay = document.getElementById('scoreDisplay');
+                const levelDisplay = document.getElementById('levelDisplay');
+                const linesDisplay = document.getElementById('linesDisplay');
+                
+                console.log('HTML elements found:', {
+                    scoreDisplay: !!scoreDisplay,
+                    levelDisplay: !!levelDisplay,
+                    linesDisplay: !!linesDisplay
+                });
+                
+                if (scoreDisplay) scoreDisplay.textContent = lastScore.toLocaleString();
+                if (levelDisplay) levelDisplay.textContent = lastLevel;
+                if (linesDisplay) linesDisplay.textContent = lastLines;
+                
+                console.log('Stats updated from C++:', {score: lastScore, level: lastLevel, lines: lastLines, running: gameRunning});
+                
+            } catch(e) {
+                console.error('Error in updateStatsFromCpp:', e);
+                updateStatsFallback();
+            }
+        }
+        
+        function updateStatsSimulated() {
+            // Fallback per quando Module.HEAP32 non è disponibile
+            console.log('Using simulated stats (Module.HEAP32 not available)');
+            
+            // Prova comunque a usare le funzioni C++ esportate se disponibili
+            if (typeof Module !== 'undefined' && Module._getScore && Module._getLevel && Module._getLines) {
+                try {
+                    updateStatsFromCpp();
+                    return;
+                } catch(e) {
+                    console.error('Error calling C++ functions in simulation mode:', e);
+                }
+            }
+            
+            // Se proprio non funziona nulla, usa il fallback
+            updateStatsFallback();
+        }
+        
+        function updateStatsFallback() {
+            // Fallback: mantieni i valori precedenti o usa valori di default
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const levelDisplay = document.getElementById('levelDisplay');
+            const linesDisplay = document.getElementById('linesDisplay');
+            
+            if (scoreDisplay && !scoreDisplay.textContent) scoreDisplay.textContent = '0';
+            if (levelDisplay && !levelDisplay.textContent) levelDisplay.textContent = '1';
+            if (linesDisplay && !linesDisplay.textContent) linesDisplay.textContent = '0';
+        }
+        
+        function stopStatsUpdater() {
+            if (statsUpdateInterval) {
+                clearInterval(statsUpdateInterval);
+                statsUpdateInterval = null;
+            }
+        }
+        
+        // Marca l'inizio del gioco per le statistiche
+        window.gameStartTime = Date.now();
         
         // Touch controls for mobile devices
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
-        const minSwipeDistance = 50;
-        const maxTapTime = 200;
+        const minSwipeDistance = 25; // Più sensibile per mobile
+        const maxTapTime = 400; // Più tempo per tap su mobile
 
         function addTouchControls() {
             const canvas = document.getElementById('canvas');
@@ -902,20 +1043,112 @@
         }
 
         function simulateKeyPress(key) {
-            const keyEvent = new KeyboardEvent('keydown', {
-                key: key,
-                code: key,
-                bubbles: true
-            });
-            document.dispatchEvent(keyEvent);
+            console.log('Simulating key press:', key);
+            
+            // Prova prima con SDL2 keydown event se Module è disponibile
+            if (typeof Module !== 'undefined' && Module.canvas) {
+                const keyCode = getKeyCode(key);
+                
+                // Simula keydown event direttamente sul canvas
+                const canvas = Module.canvas;
+                const keyEvent = new KeyboardEvent('keydown', {
+                    key: key,
+                    code: key,
+                    keyCode: keyCode,
+                    which: keyCode,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                // Dispatch su canvas prima, poi document
+                canvas.dispatchEvent(keyEvent);
+                document.dispatchEvent(keyEvent);
+                
+                // Anche keyup per essere sicuri
+                setTimeout(() => {
+                    const keyUpEvent = new KeyboardEvent('keyup', {
+                        key: key,
+                        code: key,
+                        keyCode: keyCode,
+                        which: keyCode,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    canvas.dispatchEvent(keyUpEvent);
+                    document.dispatchEvent(keyUpEvent);
+                }, 50);
+            }
+        }
+        
+        function getKeyCode(key) {
+            const codes = {
+                'ArrowUp': 38,
+                'ArrowDown': 40,
+                'ArrowLeft': 37,
+                'ArrowRight': 39,
+                'Up': 38,
+                'Down': 40,
+                'Left': 37,
+                'Right': 39
+            };
+            return codes[key] || 0;
         }
 
-        // Initialize touch controls when game container becomes visible
+        // Initialize touch controls immediatamente e quando il container diventa visibile
+        setTimeout(() => {
+            console.log('Adding touch controls immediately...');
+            addTouchControls();
+        }, 1000);
+        
+        // Fallback: aggiungi controlli touch anche al body per essere sicuri
+        function addBodyTouchControls() {
+            console.log('Adding fallback touch controls to body');
+            
+            document.body.addEventListener('touchstart', function(e) {
+                if (gameStartRequested) {
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    touchStartTime = Date.now();
+                }
+            }, { passive: false });
+            
+            document.body.addEventListener('touchend', function(e) {
+                if (!gameStartRequested) return;
+                
+                const touch = e.changedTouches[0];
+                const touchEndX = touch.clientX;
+                const touchEndY = touch.clientY;
+                const touchEndTime = Date.now();
+                
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                const deltaTime = touchEndTime - touchStartTime;
+                
+                // Stessa logica dei controlli canvas
+                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < maxTapTime) {
+                    simulateKeyPress('ArrowUp');
+                } else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        simulateKeyPress('ArrowRight');
+                    } else {
+                        simulateKeyPress('ArrowLeft');
+                    }
+                } else if (deltaY > minSwipeDistance && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    simulateKeyPress('ArrowDown');
+                }
+            }, { passive: false });
+        }
+        
+        // Attiva anche i controlli body
+        setTimeout(addBodyTouchControls, 500);
+        
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                     if (gameContainer.classList.contains('visible')) {
-                        setTimeout(addTouchControls, 1000);
+                        console.log('Game container visible, re-adding touch controls...');
+                        setTimeout(addTouchControls, 100);
                         observer.disconnect();
                     }
                 }
