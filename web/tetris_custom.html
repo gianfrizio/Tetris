@@ -137,33 +137,90 @@
             100% { background-position: 200% 50%; }
         }
 
-        /* Status e controlli personalizzati */
-        .game-status {
+        /* Layout del gioco con pannelli laterali */
+        .game-layout {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2rem;
+            min-height: 500px;
         }
 
-        .status-item {
-            text-align: center;
+        .left-stats, .right-info {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .status-label {
-            font-size: 0.8rem;
-            color: #78909c;
-            display: block;
+        .game-canvas {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
-        .status-value {
+        /* Pannelli statistiche */
+        .stats-panel, .info-panel {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid rgba(100, 255, 218, 0.4);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .stats-title, .info-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #64ffda;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+
+        .stat-item, .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 0.8rem;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover, .info-item:hover {
+            background: rgba(100, 255, 218, 0.2);
+            border-color: rgba(100, 255, 218, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(100, 255, 218, 0.2);
+        }
+
+        .stat-label, .info-label {
+            font-size: 0.9rem;
+            color: #b0bec5;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value, .info-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(100, 255, 218, 0.6);
+            background: linear-gradient(45deg, #64ffda, #00bcd4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* Canvas styling */
@@ -308,6 +365,40 @@
                 padding: 1rem;
                 margin: 0 0.5rem 1rem;
             }
+
+            .game-layout {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .left-stats, .right-info {
+                flex: none;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .stats-panel, .info-panel {
+                position: static;
+                padding: 1rem;
+            }
+
+            .stat-item, .info-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.8rem;
+            }
+
+            .stat-label, .info-label {
+                margin-bottom: 0;
+                text-align: left;
+            }
+
+            .stat-value, .info-value {
+                font-size: 1.2rem;
+                text-align: right;
+            }
             
             .controls {
                 display: grid;
@@ -368,6 +459,55 @@
             
             .game-wrapper {
                 padding: 0.5rem;
+            }
+
+            .left-stats, .right-info {
+                max-width: none;
+                width: 95%;
+            }
+
+            .stats-panel, .info-panel {
+                padding: 0.8rem;
+            }
+
+            .stats-title, .info-title {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .stat-value, .info-value {
+                font-size: 1.1rem;
+            }
+
+            .game-layout {
+                gap: 0.8rem;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .game-layout {
+                flex-direction: row;
+                gap: 1rem;
+            }
+
+            .left-stats, .right-info {
+                flex: 0 0 150px;
+                width: auto;
+            }
+
+            .stats-panel, .info-panel {
+                padding: 0.8rem;
+            }
+
+            .stat-item, .info-item {
+                flex-direction: column;
+                margin-bottom: 0.6rem;
+                padding: 0.5rem;
+            }
+
+            .stat-value, .info-value {
+                font-size: 1rem;
             }
         }
 
@@ -654,24 +794,51 @@
     <!-- Container del gioco -->
     <div class="game-container">
         <div class="game-wrapper">
-            <!-- Status del gioco -->
-            <div class="game-status">
-                <div class="status-item">
-                    <span class="status-label">Punteggio</span>
-                    <span class="status-value" id="scoreDisplay">0</span>
+            <!-- Layout con statistiche sui lati -->
+            <div class="game-layout">
+                <!-- Statistiche a sinistra -->
+                <div class="left-stats">
+                    <div class="stats-panel">
+                        <h3 class="stats-title">📊 STATS</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Punteggio</span>
+                            <span class="stat-value" id="scoreDisplay">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Livello</span>
+                            <span class="stat-value" id="levelDisplay">1</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Linee</span>
+                            <span class="stat-value" id="linesDisplay">0</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="status-item">
-                    <span class="status-label">Livello</span>
-                    <span class="status-value" id="levelDisplay">1</span>
+
+                <!-- Canvas del gioco al centro -->
+                <div class="game-canvas">
+                    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
                 </div>
-                <div class="status-item">
-                    <span class="status-label">Linee</span>
-                    <span class="status-value" id="linesDisplay">0</span>
+
+                <!-- Info aggiuntive a destra -->
+                <div class="right-info">
+                    <div class="info-panel">
+                        <h3 class="info-title">🎮 INFO</h3>
+                        <div class="info-item">
+                            <span class="info-label">Stato</span>
+                            <span class="info-value" id="gameState">Pronto</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Tempo</span>
+                            <span class="info-value" id="gameTime">00:00</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Record</span>
+                            <span class="info-value" id="highScore">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Canvas del gioco -->
-            <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
             
             <!-- Controlli -->
             <div class="controls">
@@ -810,29 +977,45 @@
                         gameContainer.classList.add('visible');
                         
                         // Avvia il gioco chiamando la funzione C++
-                        try {
-                            if (typeof Module !== 'undefined' && Module._startTetrisGame) {
-                                Module._startTetrisGame();
-                                console.log('Game started via C++ function!');
-                                
-                                // Avvia l'aggiornamento delle statistiche subito
-                                startStatsUpdater();
-                            } else {
-                                console.log('Module not ready yet, retrying...');
-                                // Riprova dopo un po'
-                                setTimeout(() => {
-                                    if (typeof Module !== 'undefined' && Module._startTetrisGame) {
-                                        Module._startTetrisGame();
-                                        console.log('Game started via C++ function (retry)!');
-                                        
-                                        // Avvia l'aggiornamento delle statistiche anche nel retry
-                                        startStatsUpdater();
-                                    }
-                                }, 500);
+                        let gameStarted = false;
+                        
+                        function tryStartGame() {
+                            if (gameStarted) return; // Evita di avviare il gioco più volte
+                            
+                            try {
+                                if (typeof Module !== 'undefined' && Module._startTetrisGame) {
+                                    Module._startTetrisGame();
+                                    gameStarted = true;
+                                    console.log('Game started via C++ function!');
+                                    
+                                    // Avvia il timer JavaScript
+                                    window.startGameTimer();
+                                    
+                                    // Avvia l'aggiornamento delle statistiche
+                                    startStatsUpdater();
+                                } else {
+                                    console.log('Module not ready yet, retrying...');
+                                    // Riprova una sola volta dopo un po'
+                                    setTimeout(() => {
+                                        if (!gameStarted && typeof Module !== 'undefined' && Module._startTetrisGame) {
+                                            Module._startTetrisGame();
+                                            gameStarted = true;
+                                            console.log('Game started via C++ function (retry)!');
+                                            
+                                            // Avvia il timer JavaScript
+                                            window.startGameTimer();
+                                            
+                                            // Avvia l'aggiornamento delle statistiche
+                                            startStatsUpdater();
+                                        }
+                                    }, 500);
+                                }
+                            } catch(e) {
+                                console.error('Error starting game:', e);
                             }
-                        } catch(e) {
-                            console.error('Error starting game:', e);
                         }
+                        
+                        tryStartGame();
                     }, 500);
                 }, 1000);
             }, 800);
@@ -859,9 +1042,45 @@
         let lastScore = 0;
         let lastLevel = 1;
         let lastLines = 0;
+        let gameStartTimeReal = null;
+        let highScore = localStorage.getItem('tetris-high-score') || 0;
+        let isGameOver = false;
+        let gameEndTime = null;
+        let lastRunningState = true;
+        let gameStoppedTime = null;
+        let lastScoreCheck = 0;
+        let scoreStuckCount = 0;
+        let totalPausedTime = 0;
+        let pauseStartTime = null;
+        let lastGameRunningState = true;
+        let isManuallyPaused = false;
+        let isTimerRunning = true;
+        let lastScoreChangeTime = Date.now();
         
         function startStatsUpdater() {
             console.log('Starting stats updater...');
+            
+        // Reset dello stato del gioco
+        isGameOver = false;
+        gameEndTime = null;
+        lastRunningState = true;
+        gameStoppedTime = null;
+        lastScoreCheck = 0;
+        scoreStuckCount = 0;
+        totalPausedTime = 0;
+        pauseStartTime = null;
+        lastGameRunningState = true;
+        isManuallyPaused = false;
+        isTimerRunning = true;
+        lastScoreChangeTime = Date.now();
+        
+        console.log('🔄 Game state reset for new game');            // Inizializza il tempo di gioco
+            gameStartTimeReal = Date.now();
+            
+            // Imposta il record salvato
+            document.getElementById('highScore').textContent = parseInt(highScore).toLocaleString();
+            
+            // La musica è gestita dal codice C++ del gioco
             
             // Aggiorna le statistiche ogni 100ms
             statsUpdateInterval = setInterval(updateGameStats, 100);
@@ -869,19 +1088,706 @@
         
         function updateGameStats() {
             try {
-                // Prova a leggere le statistiche dal memory del gioco Emscripten
-                if (typeof Module !== 'undefined' && Module.HEAP32) {
-                    // Questi offset potrebbero dover essere aggiustati in base al codice C++
-                    // Per ora usiamo un approccio di parsing del canvas o eventi
-                    updateStatsFromCanvasOrEvents();
-                } else {
-                    // Fallback: aggiorna con valori simulati per test
-                    updateStatsSimulated();
+                // PRIMA: Aggiorna il tempo di gioco (SENZA SINCRONIZZAZIONE C++ CHE ROMPE)
+                updateGameTime();
+                
+                // TERZA: Aggiorna le statistiche del C++
+                if (typeof Module !== 'undefined') {
+                    try {
+                        const score = Module._getScore();
+                        const level = Module._getLevel();
+                        const lines = Module._getLines();
+                        
+                        // Aggiorna il punteggio solo se cambiato
+                        if (score !== lastScore) {
+                            lastScore = score;
+                            lastScoreChangeTime = Date.now();
+                            
+                            // Aggiorna record se necessario
+                            if (score > highScore) {
+                                highScore = score;
+                                localStorage.setItem('tetris-high-score', highScore);
+                            }
+                        }
+                        
+                        // Aggiorna tutti i display
+                        const scoreElement = document.getElementById('scoreDisplay');
+                        const levelElement = document.getElementById('levelDisplay');
+                        const linesElement = document.getElementById('linesDisplay');
+                        const highScoreElement = document.getElementById('highScore');
+                        
+                        if (scoreElement) scoreElement.textContent = score.toLocaleString();
+                        if (levelElement) levelElement.textContent = level;
+                        if (linesElement) linesElement.textContent = lines;
+                        if (highScoreElement) highScoreElement.textContent = parseInt(highScore).toLocaleString();
+                        
+                    } catch (error) {
+                        // Ignora errori di accesso al Module
+                    }
                 }
+                
+                // QUARTA: Sincronizza con lo stato del C++
+                syncGameStateWithCpp();
+                
+                // QUINTA: Aggiorna il display dello stato
+                updateGameState();
+                
             } catch(e) {
                 console.error('Error updating stats:', e);
             }
         }
+        
+        // Nuova funzione per sincronizzare lo stato JavaScript con il C++
+        function syncWithCppState() {
+            if (typeof Module === 'undefined') return;
+            
+            try {
+                const cppRunning = Module._isGameRunning ? Module._isGameRunning() : false;
+                const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                
+                // Se il C++ dice che il gioco è in pausa ma JavaScript no
+                if (cppPaused && !isPaused && !isGameOver) {
+                    console.log('🎮 C++ is paused, syncing JavaScript');
+                    isPaused = true;
+                    isTimerRunning = false;
+                    if (!pauseStartTime) {
+                        pauseStartTime = Date.now();
+                    }
+                    
+                    const gameStateElement = document.getElementById('gameState');
+                    if (gameStateElement) {
+                        gameStateElement.textContent = 'In pausa';
+                        gameStateElement.style.color = '#ffa726';
+                    }
+                }
+                // Se il C++ dice che il gioco non è in pausa ma JavaScript sì
+                else if (!cppPaused && isPaused && cppRunning) {
+                    console.log('🎮 C++ resumed, syncing JavaScript');
+                    if (pauseStartTime) {
+                        totalPausedTime += Date.now() - pauseStartTime;
+                        pauseStartTime = null;
+                    }
+                    isPaused = false;
+                    isTimerRunning = true;
+                    
+                    const gameStateElement = document.getElementById('gameState');
+                    if (gameStateElement) {
+                        gameStateElement.textContent = 'In corso';
+                        gameStateElement.style.color = '';
+                    }
+                }
+                // Se il C++ non è running e non è paused, probabilmente è game over
+                else if (!cppRunning && !cppPaused && gameStartTimeReal && !isGameOver) {
+                    console.log('🎮 C++ game over detected, syncing JavaScript');
+                    isGameOver = true;
+                    isTimerRunning = false;
+                    isPaused = false;
+                    gameEndTime = Date.now();
+                    
+                    const gameStateElement = document.getElementById('gameState');
+                    if (gameStateElement) {
+                        gameStateElement.textContent = 'Game Over';
+                        gameStateElement.style.color = '#ff5722';
+                    }
+                }
+                
+            } catch(e) {
+                // Ignora errori di sincronizzazione
+            }
+        }
+        
+        function checkForGameOver() {
+            if (isGameOver || !isTimerRunning) return; // Se già in game over o in pausa, non controllare
+            
+            // Metodo 1: Rileva se il punteggio non cambia per molto tempo e il gioco sembra fermo
+            const currentTime = Date.now();
+            
+            // Se il punteggio è cambiato, aggiorna il timestamp
+            if (lastScore !== lastScoreCheck) {
+                lastScoreChangeTime = currentTime;
+                lastScoreCheck = lastScore;
+                scoreStuckCount = 0;
+                return;
+            }
+            
+            // Se il punteggio è > 0 e non cambia da più di 3 secondi, è game over
+            if (lastScore > 0 && (currentTime - lastScoreChangeTime) > 3000) {
+                console.log('� GAME OVER AUTO-DETECTED! Score stuck for 3+ seconds with score:', lastScore);
+                stopTimer();
+                return;
+            }
+            
+            // Metodo alternativo: conta i cicli di controllo
+            scoreStuckCount++;
+            if (lastScore > 0 && scoreStuckCount > 30) { // 30 * 100ms = 3 secondi
+                console.log('💀 GAME OVER AUTO-DETECTED! Score stuck counter reached:', scoreStuckCount);
+                stopTimer();
+            }
+            
+            // Metodo 2: Rileva pattern di game over tramite eventi DOM o canvas
+            // Questo potrebbe essere migliorato osservando il canvas per messaggi di game over
+            try {
+                const canvas = document.getElementById('canvas');
+                if (canvas) {
+                    // Qui potremmo analizzare il contenuto del canvas per cercare testo "GAME OVER"
+                    // Per ora usiamo solo il metodo del punteggio bloccato
+                }
+            } catch(e) {
+                // Ignora errori di analisi canvas
+            }
+        }
+        
+        function updateGameTime() {
+            const gameTimeElement = document.getElementById('gameTime');
+            
+            if (!gameTimeElement || !gameStartTimeReal) return;
+            
+            let elapsed, minutes, seconds, timeString;
+            
+            if (isGameOver) {
+                // Game over - usa tempo fisso
+                if (gameEndTime) {
+                    elapsed = Math.floor((gameEndTime - gameStartTimeReal - totalPausedTime) / 1000);
+                } else {
+                    elapsed = Math.floor((Date.now() - gameStartTimeReal - totalPausedTime) / 1000);
+                }
+                minutes = Math.floor(elapsed / 60);
+                seconds = elapsed % 60;
+                timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                gameTimeElement.textContent = timeString + ' (FINAL)';
+                gameTimeElement.style.color = '#ff5722';
+                return;
+            }
+            
+            if (isTimerRunning) {
+                // Timer attivo - calcola tempo corrente
+                const currentTime = isPaused ? pauseStartTime : Date.now();
+                elapsed = Math.floor((currentTime - gameStartTimeReal - totalPausedTime) / 1000);
+                minutes = Math.floor(elapsed / 60);
+                seconds = elapsed % 60;
+                timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (isPaused) {
+                    gameTimeElement.textContent = timeString + ' (PAUSA)';
+                    gameTimeElement.style.color = '#ffa726';
+                } else {
+                    gameTimeElement.textContent = timeString;
+                    gameTimeElement.style.color = '';
+                }
+            }
+        }
+        
+        // Funzione separata per sincronizzare lo stato JavaScript con il C++
+        function syncGameStateWithCpp() {
+            try {
+                if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGamePaused) {
+                    const cppRunning = Module._isGameRunning();
+                    const cppPaused = Module._isGamePaused();
+                    
+                    // Rileva game over: non running e non paused
+                    if (!cppRunning && !cppPaused && !isGameOver && gameStartTimeReal) {
+                        console.log('🎮 GAME OVER detected - syncing state');
+                        isGameOver = true;
+                        isTimerRunning = false;
+                        isPaused = false;
+                        if (!gameEndTime) {
+                            gameEndTime = Date.now();
+                            
+                            // Se eravamo in pausa, calcola il tempo di pausa finale
+                            if (pauseStartTime) {
+                                totalPausedTime += gameEndTime - pauseStartTime;
+                                pauseStartTime = null;
+                            }
+                            
+                            console.log('⏰ Timer stopped at game over:', new Date(gameEndTime).toLocaleTimeString());
+                        }
+                    }
+                    // Rileva pausa
+                    else if (cppPaused && !isPaused && !isGameOver) {
+                        console.log('🎮 PAUSE detected - syncing state');
+                        isPaused = true;
+                        isTimerRunning = false;
+                        if (!pauseStartTime) {
+                            pauseStartTime = Date.now();
+                        }
+                    }
+                    // Rileva resume
+                    else if (!cppPaused && isPaused && cppRunning) {
+                        console.log('🎮 RESUME detected - syncing state');
+                        if (pauseStartTime) {
+                            totalPausedTime += Date.now() - pauseStartTime;
+                            pauseStartTime = null;
+                        }
+                        isPaused = false;
+                        isTimerRunning = true;
+                    }
+                }
+            } catch(e) {
+                // Ignora errori di sincronizzazione
+            }
+        }
+        
+        // Funzione semplice per aggiornare solo il display dello stato
+        function updateGameState() {
+            const gameStateElement = document.getElementById('gameState');
+            if (!gameStateElement) return;
+            
+            // Aggiorna solo il display dello stato
+            if (isGameOver) {
+                gameStateElement.textContent = 'Game Over';
+                gameStateElement.style.color = '#ff5722';
+                gameStateElement.style.textShadow = '0 0 10px #ff5722';
+            } else if (isPaused || !isTimerRunning) {
+                gameStateElement.textContent = 'Pausa';
+                gameStateElement.style.color = '#ffb74d';
+                gameStateElement.style.textShadow = '0 0 8px #ffb74d';
+            } else {
+                gameStateElement.textContent = 'In corso';
+                gameStateElement.style.color = '';
+                gameStateElement.style.textShadow = '';
+            }
+        }
+        
+        function handleGameOver() {
+            console.log('🎮 GAME OVER DETECTED! Stopping timer.');
+            
+            // Ferma il timer
+            if (!gameEndTime) {
+                isTimerRunning = false;
+                gameEndTime = Date.now();
+                
+                // Se eravamo in pausa quando il gioco è finito, aggiungi l'ultima pausa
+                if (pauseStartTime) {
+                    const finalPauseDuration = gameEndTime - pauseStartTime;
+                    totalPausedTime += finalPauseDuration;
+                    pauseStartTime = null;
+                }
+                
+                console.log('⏰ Timer stopped at:', new Date(gameEndTime).toLocaleTimeString());
+                console.log('📊 Total paused time:', Math.floor(totalPausedTime / 1000), 'seconds');
+            }
+            
+            // La musica è gestita dal codice C++ del gioco
+            
+            // Aggiorna il record se necessario
+            if (lastScore > highScore) {
+                highScore = lastScore;
+                localStorage.setItem('tetris-high-score', highScore);
+                console.log('🏆 New high score:', highScore);
+                
+                // Mostra notifica nuovo record
+                const highScoreElement = document.getElementById('highScore');
+                if (highScoreElement) {
+                    highScoreElement.style.color = '#ff9800';
+                    highScoreElement.style.textShadow = '0 0 15px #ff9800';
+                    highScoreElement.textContent = parseInt(highScore).toLocaleString();
+                }
+            }
+        }
+        
+        // Funzione per testare manualmente il game over
+        window.triggerGameOver = function() {
+            console.log('🧪 Manual game over trigger');
+            isGameOver = true;
+            handleGameOver();
+        };
+        
+        // Le funzioni audio sono gestite dal codice C++ del gioco
+        
+        // Funzioni per controllare manualmente il timer
+        function pauseTimer() {
+            if (isTimerRunning && !isGameOver) {
+                isPaused = true;
+                pauseStartTime = Date.now();
+                console.log('⏸️ Timer paused');
+                
+                // Aggiorna il display
+                const gameStateElement = document.getElementById('gameState');
+                if (gameStateElement) {
+                    gameStateElement.textContent = 'In pausa';
+                    gameStateElement.style.color = '#ffa726';
+                }
+            }
+        }
+        
+        function resumeTimer() {
+            if (isPaused && !isGameOver) {
+                if (pauseStartTime) {
+                    const pauseDuration = Date.now() - pauseStartTime;
+                    totalPausedTime += pauseDuration;
+                    console.log('▶️ Timer resumed, pause duration:', Math.floor(pauseDuration / 1000), 'seconds');
+                }
+                isPaused = false;
+                pauseStartTime = null;
+                
+                // Aggiorna il display
+                const gameStateElement = document.getElementById('gameState');
+                if (gameStateElement) {
+                    gameStateElement.textContent = 'In corso';
+                    gameStateElement.style.color = '';
+                }
+            }
+        }
+        
+        function stopTimer() {
+            console.log('🛑 Stopping timer (game over)');
+            
+            isGameOver = true;
+            isTimerRunning = false;
+            gameEndTime = Date.now();
+            
+            if (pauseStartTime) {
+                pauseStartTime = null;
+            }
+            
+            handleGameOver();
+        }
+        
+        // Funzioni esposte per test manuali
+        window.pauseTimer = pauseTimer;
+        window.resumeTimer = resumeTimer;
+        window.stopTimer = stopTimer;
+        window.restartTimer = restartTimer;
+        
+        // Funzioni FORZATE che funzionano sempre
+        function forceCompleteRestart() {
+            console.log('� SAFE COMPLETE RESTART - Timer + Game');
+            
+            // STEP 1: RESETTA TUTTO JavaScript
+            gameStartTimeReal = Date.now();
+            isTimerRunning = true;
+            isGameOver = false;
+            isPaused = false;
+            totalPausedTime = 0;
+            pauseStartTime = null;
+            gameEndTime = null;
+            lastScore = 0;
+            
+            // STEP 2: AGGIORNA DISPLAY SUBITO
+            const gameTimeElement = document.getElementById('gameTime');
+            const gameStateElement = document.getElementById('gameState');
+            
+            if (gameTimeElement) {
+                gameTimeElement.style.color = '';
+                gameTimeElement.textContent = '00:00';
+            }
+            
+            if (gameStateElement) {
+                gameStateElement.style.color = '';
+                gameStateElement.textContent = 'In corso';
+            }
+            
+            // STEP 3: RIAVVIA IL GIOCO C++ IN MODO SICURO
+            console.log('🎮 Trying safe C++ restart...');
+            
+            try {
+                if (typeof Module !== 'undefined') {
+                    // Prova prima _restartTetrisGame
+                    if (Module._restartTetrisGame) {
+                        console.log('Calling _restartTetrisGame...');
+                        Module._restartTetrisGame();
+                        console.log('✅ _restartTetrisGame called successfully');
+                    }
+                    // Se non esiste, prova _startTetrisGame
+                    else if (Module._startTetrisGame) {
+                        console.log('Calling _startTetrisGame...');
+                        Module._startTetrisGame();
+                        console.log('✅ _startTetrisGame called successfully');
+                    }
+                    // Ultimo tentativo: usa ccall se disponibile
+                    else if (Module.ccall) {
+                        try {
+                            console.log('Trying ccall method...');
+                            Module.ccall('restartTetrisGame', null, []);
+                            console.log('✅ ccall restart succeeded');
+                        } catch(e) {
+                            try {
+                                Module.ccall('startTetrisGame', null, []);
+                                console.log('✅ ccall start succeeded');
+                            } catch(e2) {
+                                console.log('❌ ccall methods failed');
+                            }
+                        }
+                    }
+                    else {
+                        console.log('❌ No C++ restart methods available');
+                        console.log('Available Module functions:');
+                        window.listModuleFunctions();
+                    }
+                } else {
+                    console.log('❌ Module not available');
+                }
+            } catch(e) {
+                console.error('❌ C++ restart failed:', e);
+            }
+            
+            console.log('✅ RESTART COMPLETED - Timer is running, C++ hopefully restarted');
+        }
+        
+        function forcePause() {
+            console.log('💥 FORCING PAUSE');
+            
+            if (!isPaused && !isGameOver) {
+                isPaused = true;
+                isTimerRunning = false;  // FERMA IL TIMER SUBITO
+                pauseStartTime = Date.now();
+                
+                // AGGIORNA DISPLAY SUBITO
+                const gameStateElement = document.getElementById('gameState');
+                if (gameStateElement) {
+                    gameStateElement.textContent = 'In pausa';
+                    gameStateElement.style.color = '#ffa726';
+                }
+                
+                console.log('✅ PAUSE FORCED - Timer stopped');
+            }
+        }
+        
+        function forceResume() {
+            console.log('💥 FORCING RESUME');
+            
+            if (isPaused && !isGameOver) {
+                if (pauseStartTime) {
+                    const pauseDuration = Date.now() - pauseStartTime;
+                    totalPausedTime += pauseDuration;
+                    console.log('⏱️ Added pause duration:', pauseDuration, 'ms');
+                }
+                
+                isPaused = false;
+                isTimerRunning = true;  // RIPRENDI IL TIMER SUBITO
+                pauseStartTime = null;
+                
+                // AGGIORNA DISPLAY SUBITO
+                const gameStateElement = document.getElementById('gameState');
+                if (gameStateElement) {
+                    gameStateElement.textContent = 'In corso';
+                    gameStateElement.style.color = '';
+                }
+                
+                console.log('✅ RESUME FORCED - Timer running');
+            }
+        }
+        
+        // Funzioni aggiuntive per controllo manuale
+        window.startGameTimer = function() {
+            console.log('🎮 Starting game timer manually');
+            gameStartTimeReal = Date.now();
+            isTimerRunning = true;
+            isGameOver = false;
+            isPaused = false;
+            totalPausedTime = 0;
+            pauseStartTime = null;
+            gameEndTime = null;
+            
+            const gameStateElement = document.getElementById('gameState');
+            if (gameStateElement) {
+                gameStateElement.textContent = 'In corso';
+                gameStateElement.style.color = '';
+            }
+        };
+        
+        window.stopGameTimer = function() {
+            console.log('🎮 Stopping game timer manually');
+            isGameOver = true;
+            isTimerRunning = false;
+            gameEndTime = Date.now();
+            
+            const gameStateElement = document.getElementById('gameState');
+            if (gameStateElement) {
+                gameStateElement.textContent = 'Game Over';
+                gameStateElement.style.color = '#ff5722';
+            }
+        };
+        
+        window.forceCompleteRestart = forceCompleteRestart;
+        window.forcePause = forcePause;
+        window.forceResume = forceResume;
+        
+        // Debug function to see available Module functions
+        window.listModuleFunctions = function() {
+            if (typeof Module !== 'undefined') {
+                console.log('Available Module functions:');
+                for (let key in Module) {
+                    if (typeof Module[key] === 'function' && key.startsWith('_')) {
+                        console.log('  ' + key);
+                    }
+                }
+            } else {
+                console.log('Module not available yet');
+            }
+        };
+        
+        // Debug function to check game state
+        window.checkGameState = function() {
+            console.log('=== GAME STATE DEBUG ===');
+            console.log('JavaScript state:');
+            console.log('  isTimerRunning:', isTimerRunning);
+            console.log('  isPaused:', isPaused);
+            console.log('  isGameOver:', isGameOver);
+            console.log('  gameStartTimeReal:', gameStartTimeReal);
+            
+            if (typeof Module !== 'undefined') {
+                console.log('C++ state:');
+                try {
+                    if (Module._isGameRunning) console.log('  isGameRunning:', Module._isGameRunning());
+                    if (Module._isGamePaused) console.log('  isGamePaused:', Module._isGamePaused());
+                    if (Module._getScore) console.log('  score:', Module._getScore());
+                } catch(e) {
+                    console.log('  Error reading C++ state:', e);
+                }
+            } else {
+                console.log('C++ Module not available');
+            }
+            console.log('========================');
+        };
+        
+        // Event listener per la tastiera
+        document.addEventListener('keydown', function(event) {
+            console.log('Key pressed:', event.key, event.code);
+            
+            // INVIO - riavvia tutto FORZATAMENTE
+            if (event.key === 'Enter' || event.code === 'Enter') {
+                console.log('🔄 ENTER pressed - FORCING complete restart');
+                event.preventDefault();
+                
+                // FORZA il restart completo
+                forceCompleteRestart();
+                return;
+            }
+            
+            if (event.key === 'Escape' || event.code === 'Escape') {
+                console.log('ESC pressed - FORCING pause toggle');
+                event.preventDefault();
+                
+                if (!isGameOver) {
+                    if (isPaused) {
+                        console.log('FORCING resume');
+                        forceResume();
+                    } else {
+                        console.log('FORCING pause');
+                        forcePause();
+                    }
+                }
+            }
+            
+            // INVIO per ricominciare
+            if (event.key === 'Enter' || event.code === 'Enter') {
+                console.log('ENTER key detected');
+                
+                if (isGameOver) {
+                    // Se siamo in game over, riavvia immediatamente
+                    console.log('� Restarting game from game over state');
+                    restartTimer();
+                } else if (lastScore > 0) {
+                    // Se abbiamo un punteggio e premiamo INVIO, potrebbe essere per ricominciare
+                    console.log('🔍 ENTER pressed during game, triggering game over first');
+                    stopTimer();
+                    
+                    // Poi riavvia dopo un breve delay
+                    setTimeout(() => {
+                        console.log('🔄 Auto-restarting after ENTER');
+                        restartTimer();
+                    }, 500);
+                } else {
+                    // Punteggio 0, probabilmente nuovo gioco
+                    console.log('🆕 ENTER pressed with score 0, ensuring timer is active');
+                    if (!isTimerRunning) {
+                        restartTimer();
+                    }
+                }
+            }
+            
+            // Per test: Ctrl+G per trigger game over
+            if (event.ctrlKey && event.key === 'g') {
+                console.log('Manual game over triggered');
+                stopTimer();
+            }
+        });
+        
+        // Funzione per riavviare il timer per una nuova partita
+        function restartTimer() {
+            console.log('🔄 Restarting timer AND game');
+            
+            // Reset completo
+            isGameOver = false;
+            isTimerRunning = true;
+            isPaused = false;  // Reset anche lo stato pausa
+            gameEndTime = null;
+            gameStartTimeReal = Date.now();
+            totalPausedTime = 0;
+            pauseStartTime = null;
+            lastScoreChangeTime = Date.now();
+            lastScoreCheck = 0;
+            scoreStuckCount = 0;
+            
+            // Reset display
+            const gameTimeElement = document.getElementById('gameTime');
+            const gameStateElement = document.getElementById('gameState');
+            
+            if (gameTimeElement) {
+                gameTimeElement.style.color = '';
+                gameTimeElement.textContent = '00:00';
+            }
+            
+            if (gameStateElement) {
+                gameStateElement.style.color = '';
+                gameStateElement.style.textShadow = '';
+                gameStateElement.textContent = 'In corso';
+            }
+            
+            // Riavvia anche il gioco C++
+            try {
+                if (typeof Module !== 'undefined') {
+                    // Usa la nuova funzione dedicata per il restart
+                    if (Module._restartTetrisGame) {
+                        console.log('🎮 Restarting with _restartTetrisGame...');
+                        Module._restartTetrisGame();
+                    } else if (Module._startTetrisGame) {
+                        console.log('🎮 Restarting with _startTetrisGame...');
+                        Module._startTetrisGame();
+                    } else {
+                        console.log('⚠️ No restart function found. Available functions:');
+                        window.listModuleFunctions();
+                        console.log('💡 Use window.listModuleFunctions() to see all available functions');
+                    }
+                } else {
+                    console.log('⚠️ Module not available yet');
+                }
+            } catch(e) {
+                console.error('Error restarting C++ game:', e);
+            }
+            
+            console.log('✅ Timer and game restarted');
+        }
+        
+        // Funzioni esposte per test manuali
+        window.restartTimer = restartTimer;
+        window.forceGameOver = function() {
+            console.log('🧪 Forcing game over for testing');
+            stopTimer();
+        };
+        
+        window.gameInfo = function() {
+            console.log('🎮 Game State:', {
+                isGameOver: isGameOver,
+                isTimerRunning: isTimerRunning,
+                lastScore: lastScore,
+                scoreStuckCount: scoreStuckCount,
+                timeElapsed: gameStartTimeReal ? Math.floor((Date.now() - gameStartTimeReal) / 1000) + 's' : 'Not started'
+            });
+        };
+        
+        // Aggiungi pulsante di test nella console
+        console.log('🎮 Tetris Timer Controls:');
+        console.log('  pauseTimer() - Pausa il timer');
+        console.log('  resumeTimer() - Riprende il timer');
+        console.log('  forceGameOver() - Forza game over');
+        console.log('  restartTimer() - Riavvia per nuovo gioco');
+        console.log('\n⌨️ Keyboard Controls:');
+        console.log('  ESC - Pausa/Riprendi');
+        console.log('  ENTER - Riavvia gioco');
+        console.log('  Ctrl+G - Forza game over');
         
         function updateStatsFromCanvasOrEvents() {
             // Usa le funzioni C++ esportate per ottenere le statistiche reali
@@ -934,6 +1840,29 @@
                 if (scoreDisplay) scoreDisplay.textContent = lastScore.toLocaleString();
                 if (levelDisplay) levelDisplay.textContent = lastLevel;
                 if (linesDisplay) linesDisplay.textContent = lastLines;
+                
+                // Simple detection: if score goes from >0 to 0, might be game over
+                if (lastScore > 0 && currentScore === 0 && !isGameOver) {
+                    console.log('💀 Possible game over: score reset to 0');
+                    // Don't auto-trigger, let user use ENTER to restart
+                }
+                
+                // Aggiorna il record se necessario
+                if (lastScore > highScore) {
+                    highScore = lastScore;
+                    localStorage.setItem('tetris-high-score', highScore);
+                    const highScoreElement = document.getElementById('highScore');
+                    if (highScoreElement) {
+                        highScoreElement.textContent = parseInt(highScore).toLocaleString();
+                        // Effetto visivo per nuovo record
+                        highScoreElement.style.color = '#ff9800';
+                        highScoreElement.style.textShadow = '0 0 15px #ff9800';
+                        setTimeout(() => {
+                            highScoreElement.style.color = '';
+                            highScoreElement.style.textShadow = '';
+                        }, 2000);
+                    }
+                }
                 
                 console.log('Stats updated from C++:', {score: lastScore, level: lastLevel, lines: lastLines, running: gameRunning});
                 

@@ -95,12 +95,10 @@ private:
     std::unique_ptr<Mix_Chunk, decltype(&Mix_FreeChunk)> sound_move;      // Movement sound / Suono movimento
     std::unique_ptr<Mix_Music, decltype(&Mix_FreeMusic)> music;           // Background music / Musica di sottofondo
     
-    // Game state flags / Flag stato di gioco
-    bool pause_game;         // Is game paused? / È in pausa il gioco?
-
 public:
     // Public game statistics and state / Statistiche e stato di gioco pubblici
     bool game_over;          // Is game over? / È finito il gioco?
+    bool pause_game;         // Is game paused? / È in pausa il gioco?
     int score;              // Current score / Punteggio attuale
     int level;              // Current level / Livello attuale
     int lines_cleared_total; // Total lines cleared / Totale linee eliminate
@@ -401,6 +399,8 @@ public:
     
     // Reset game to initial state / Resetta gioco allo stato iniziale
     void resetGame() {
+        std::cout << "Resetting game completely..." << std::endl;
+        
         // Clear the game grid / Pulisci la griglia di gioco
         for (auto& row : grid) {
             row.fill(0);
@@ -415,14 +415,30 @@ public:
         
         // Spawn first piece / Genera primo pezzo
         spawnPiece();
+        
+        // Restart music if needed / Riavvia musica se necessario
+        if (!Mix_PlayingMusic()) {
+            Mix_PlayMusic(music.get(), -1);
+        }
+        
+        std::cout << "Game reset complete!" << std::endl;
     }
     
     // Handle keyboard input / Gestisce input da tastiera
     void handleInput(const SDL_Event& event) {
         if (event.type == SDL_KEYDOWN) {
+            // INVIO - SEMPRE riavvia il gioco (indipendentemente dallo stato)
+            if (event.key.keysym.sym == SDLK_RETURN) {
+                std::cout << "ENTER pressed - Restarting game completely" << std::endl;
+                resetGame();
+                gameStartRequested = true;  // Assicurati che il gioco riprenda
+                return;  // Esci subito dopo il reset
+            }
+            
             if (!game_over) {  // If game is still running / Se il gioco è ancora in corso
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                    std::cout << "ESC pressed - Pause state: " << (pause_game ? "PAUSED" : "PLAYING") << std::endl;
                 }
                 
                 if (!pause_game) {  // Only process input if not paused / Processa input solo se non in pausa
@@ -458,8 +474,6 @@ public:
                             break;
                     }
                 }
-            } else if (event.key.keysym.sym == SDLK_RETURN) {  // Restart after game over / Ricomincia dopo game over
-                resetGame();
             }
         }
     }
@@ -488,6 +502,8 @@ public:
                 if (isGameOver()) {         // Check if game is over / Controlla se il gioco è finito
                     Mix_PlayChannel(-1, sound_gameover.get(), 0);
                     game_over = true;
+                    pause_game = false;  // Assicurati che non sia in pausa quando è game over
+                    std::cout << "GAME OVER detected!" << std::endl;
                 } else {
                     spawnPiece();           // Spawn next piece / Genera prossimo pezzo
                 }
@@ -700,6 +716,14 @@ extern "C" {
         }
     }
     
+    // Restart the game at any time / Riavvia il gioco in qualsiasi momento
+    void restartTetrisGame() {
+        if (TetrisGame::instance) {
+            TetrisGame::instance->resetGame();
+            gameStartRequested = true;  // Assicurati che il gioco riprenda
+        }
+    }
+    
     // Get current score / Ottieni punteggio attuale
     int getScore() {
         if (TetrisGame::instance) {
@@ -727,7 +751,16 @@ extern "C" {
     // Check if game is running / Controlla se il gioco è in esecuzione
     bool isGameRunning() {
         if (TetrisGame::instance) {
-            return !TetrisGame::instance->game_over && gameStartRequested;
+            // Il gioco è in esecuzione se è stato avviato, non è finito e non è in pausa
+            return gameStartRequested && !TetrisGame::instance->game_over && !TetrisGame::instance->pause_game;
+        }
+        return false;
+    }
+    
+    // Check if game is paused / Controlla se il gioco è in pausa
+    bool isGamePaused() {
+        if (TetrisGame::instance) {
+            return TetrisGame::instance->pause_game;
         }
         return false;
     }
