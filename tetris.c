@@ -596,7 +596,7 @@ int main(int argc __attribute__((unused)), char *argv[] __attribute__((unused)))
         }
         if (game_over) {
             render_text("GAME OVER", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2 - 40, white);
-            render_text("Premi INVIO per ricominciare", WINDOW_WIDTH/2 - 140, WINDOW_HEIGHT/2, white);
+            render_text("Tap per riavviare", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2, white);
         }
 
         // Present the rendered frame / Presenta il frame renderizzato

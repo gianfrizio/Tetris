@@ -83,6 +83,18 @@ private:
     std::array<std::array<int, GRID_WIDTH>, GRID_HEIGHT> grid;  // Game grid / Griglia di gioco
     Piece current_piece;                                         // Currently falling piece / Pezzo attualmente in caduta
     
+    // Mobile detection / Rilevazione mobile
+    bool isMobile() const {
+        #ifdef __EMSCRIPTEN__
+        // In Emscripten, check screen width for mobile detection
+        return EM_ASM_INT({
+            return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        });
+        #else
+        return false;
+        #endif
+    }
+    
     // SDL components / Componenti SDL
     SDL_Window* window;      // Game window / Finestra di gioco
     SDL_Renderer* renderer;  // Graphics renderer / Renderer grafico
@@ -424,8 +436,16 @@ public:
         std::cout << "Game reset complete!" << std::endl;
     }
     
-    // Handle keyboard input / Gestisce input da tastiera
+    // Handle keyboard and touch input / Gestisce input da tastiera e touch
     void handleInput(const SDL_Event& event) {
+        // Handle touch/mouse click for game restart / Gestisce touch/click per riavvio
+        if (event.type == SDL_MOUSEBUTTONDOWN && game_over) {
+            std::cout << "Touch/Click detected during game over - Restarting game" << std::endl;
+            resetGame();
+            gameStartRequested = true;
+            return;
+        }
+        
         if (event.type == SDL_KEYDOWN) {
             // INVIO - SEMPRE riavvia il gioco (indipendentemente dallo stato)
             if (event.key.keysym.sym == SDLK_RETURN) {
@@ -524,12 +544,20 @@ public:
         // Draw game state messages / Disegna messaggi stato di gioco
         Color white(255, 255, 255);
         if (pause_game) {
-            renderText("PAUSA (ESC)", WINDOW_WIDTH/2 - 60, WINDOW_HEIGHT/2 - 10, white);
+            if (isMobile()) {
+                renderText("PAUSA", WINDOW_WIDTH/2 - 30, WINDOW_HEIGHT/2 - 10, white);
+            } else {
+                renderText("PAUSA (ESC)", WINDOW_WIDTH/2 - 60, WINDOW_HEIGHT/2 - 10, white);
+            }
         }
         
         if (game_over) {
             renderText("GAME OVER", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2 - 40, white);
-            renderText("Tap per riavviare", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2, white);
+            if (isMobile()) {
+                renderText("Tap per ricominciare", WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT/2, white);
+            } else {
+                renderText("Premi INVIO per ricominciare", WINDOW_WIDTH/2 - 140, WINDOW_HEIGHT/2, white);
+            }
         }
         
         // Present the rendered frame / Presenta il frame renderizzato

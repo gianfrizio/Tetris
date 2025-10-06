@@ -739,13 +739,76 @@
             display: none;
         }
 
-        /* Mobile game control buttons */
+        /* Mobile game control help text and menu */
         .mobile-game-controls {
             display: none;
-            gap: 1rem;
             justify-content: center;
             margin-top: 1rem;
             padding: 0 1rem;
+        }
+        
+        .mobile-help-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            color: rgba(100, 255, 218, 0.8);
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+        
+        /* Mobile Pause Menu */
+        .mobile-pause-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-pause-content {
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid #64ffda;
+            border-radius: 20px;
+            padding: 2rem;
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .mobile-pause-menu.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .mobile-pause-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #64ffda;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #64ffda;
+        }
+        
+        .mobile-pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .mobile-btn {
@@ -933,6 +996,17 @@
         </div>
     </div>
 
+    <!-- Mobile Pause Menu -->
+    <div class="mobile-pause-menu" id="mobilePauseMenu">
+        <div class="mobile-pause-content">
+            <div class="mobile-pause-title">⏸️ PAUSA</div>
+            <div class="mobile-pause-buttons">
+                <button class="mobile-btn" id="resumeGameBtn">▶️ Riprendi</button>
+                <button class="mobile-btn" id="restartGameBtn">🔄 Ricomincia</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Game Over Overlay -->
     <div class="mobile-gameover-overlay" id="mobileGameOverOverlay">
         <div class="mobile-gameover-content">
@@ -1059,10 +1133,9 @@
                     </div>
                 </div>
                 
-                <!-- Mobile Game Controls -->
+                <!-- Mobile Long Press Help Text -->
                 <div class="mobile-game-controls">
-                    <button class="mobile-btn pause-btn" id="mobilePauseBtn">⏸️ Pausa</button>
-                    <button class="mobile-btn restart-btn" id="mobileRestartBtn">🔄 Riavvia</button>
+                    <div class="mobile-help-text">Tieni premuto per menu pausa</div>
                 </div>
             </div>
         </div>
@@ -1465,6 +1538,13 @@
         // Funzione separata per sincronizzare lo stato JavaScript con il C++
         function syncGameStateWithCpp() {
             try {
+                // Se c'è un menu mobile attivo o long press in corso, NON sincronizzare
+                const mobilePauseMenu = document.getElementById('mobilePauseMenu');
+                if ((mobilePauseMenu && mobilePauseMenu.classList.contains('active')) || longPressTriggered || mobilePauseActive) {
+                    console.log('🚫 Sync disabilitata - sistema mobile pause attivo');
+                    return;
+                }
+                
                 if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGamePaused) {
                     const cppRunning = Module._isGameRunning();
                     const cppPaused = Module._isGamePaused();
@@ -1505,6 +1585,11 @@
                         }
                         isPaused = false;
                         isTimerRunning = true;
+                    }
+                    // Rileva RESTART dopo game over: game running ma era game over
+                    else if (cppRunning && !cppPaused && isGameOver) {
+                        console.log('🎮 RESTART after game over detected - resetting all info');
+                        resetGameInfo(); // Reset completo delle informazioni
                     }
                 }
             } catch(e) {
@@ -1841,15 +1926,29 @@
             }
             
             if (event.key === 'Escape' || event.code === 'Escape') {
-                console.log('ESC pressed - FORCING pause toggle');
+                console.log('ESC pressed - checking conditions');
                 event.preventDefault();
                 
+                // Se il menu mobile è già visibile, questo ESC è per il C++, non fare altro JavaScript
+                const mobilePauseMenu = document.getElementById('mobilePauseMenu');
+                if (mobilePauseMenu && mobilePauseMenu.classList.contains('active')) {
+                    console.log('📱 Mobile menu visibile - ESC per C++, nessuna azione JS');
+                    return;
+                }
+                
+                // Se è in corso un long press, ignora ESC
+                if (longPressTriggered) {
+                    console.log('📱 Long press in corso - ignorando ESC');
+                    return;
+                }
+                
+                // ESC da tastiera fisica - gestisci normalmente
                 if (!isGameOver) {
                     if (isPaused) {
-                        console.log('FORCING resume');
+                        console.log('FORCING resume da tastiera');
                         forceResume();
                     } else {
-                        console.log('FORCING pause');
+                        console.log('FORCING pause da tastiera');
                         forcePause();
                     }
                 }
@@ -2025,6 +2124,12 @@
                 if (levelDisplay) levelDisplay.textContent = lastLevel;
                 if (linesDisplay) linesDisplay.textContent = lastLines;
                 
+                // Check if game restarted (score=0, level=1, gameRunning=true)
+                if (gameRunning && currentScore === 0 && currentLevel === 1 && isGameOver) {
+                    console.log('🔄 Game restart detected - resetting info panel');
+                    resetGameInfo();
+                }
+                
                 // Simple detection: if score goes from >0 to 0, might be game over
                 if (lastScore > 0 && currentScore === 0 && !isGameOver) {
                     console.log('💀 Possible game over: score reset to 0');
@@ -2083,6 +2188,46 @@
             if (scoreDisplay && !scoreDisplay.textContent) scoreDisplay.textContent = '0';
             if (levelDisplay && !levelDisplay.textContent) levelDisplay.textContent = '1';
             if (linesDisplay && !linesDisplay.textContent) linesDisplay.textContent = '0';
+        }
+        
+        function resetGameInfo() {
+            console.log('🔄 Starting resetGameInfo...');
+            
+            // Reset game state
+            isGameOver = false;
+            isPaused = false;
+            isTimerRunning = true;
+            
+            // Reset time tracking
+            gameStartTimeReal = Date.now();
+            gameEndTime = null;
+            totalPausedTime = 0;
+            pauseStartTime = null;
+            
+            console.log('🔄 Reset timer variables:', {
+                gameStartTimeReal: new Date(gameStartTimeReal).toLocaleTimeString(),
+                isTimerRunning,
+                isPaused,
+                isGameOver
+            });
+            
+            // Update game state element
+            const gameStateElement = document.getElementById('gameState');
+            if (gameStateElement) {
+                gameStateElement.textContent = 'In corso';
+                gameStateElement.style.color = '';
+                console.log('🔄 Updated game state display to "In corso"');
+            }
+            
+            // Reset time display (remove FINAL)
+            const gameTimeElement = document.getElementById('gameTime');
+            if (gameTimeElement) {
+                gameTimeElement.textContent = '00:00';
+                gameTimeElement.style.color = '';
+                console.log('🔄 Reset time display to "00:00"');
+            }
+            
+            console.log('✅ Game info reset complete');
         }
         
         function stopStatsUpdater() {
@@ -2163,6 +2308,11 @@
     let lastTapTime = 0;
     const TAP_DEBOUNCE = 250; // ms
     const TAP_HOLD_TIME = 300; // ms max for a tap
+    const LONG_PRESS_TIME = 2000; // ms for long press (2 seconds)
+    let longPressTimer = null;
+    let longPressTriggered = false;
+    let touchMoved = false;
+    let mobilePauseActive = false; // Track mobile pause state
     // Track whether a touch started on the canvas so body fallback ignores it
     let canvasTouchActive = false;
         // Throttle for lateral moves to prevent multiple rapid moves from a single swipe
@@ -2202,14 +2352,68 @@
                 touchStartX = touch.clientX;
                 touchStartY = touch.clientY;
                 touchStartTime = Date.now();
+                longPressTriggered = false;
+                touchMoved = false;
+                
+                // Start long press timer only if touch stays still
+                longPressTimer = setTimeout(() => {
+                    // Double check: only trigger if no movement occurred AND timer wasn't cancelled
+                    if (!touchMoved && longPressTimer !== null && canvasTouchActive) {
+                        longPressTriggered = true;
+                        console.log('✅ Long press activated - conditions met');
+                        showMobilePauseMenu();
+                    } else {
+                        console.log('❌ Long press cancelled - movement detected or touch ended');
+                    }
+                }, LONG_PRESS_TIME);
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) return; // ignore multi-touch
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const deltaX = Math.abs(touch.clientX - touchStartX);
+                const deltaY = Math.abs(touch.clientY - touchStartY);
+                
+                // If significant movement, cancel long press (but only if not already triggered)
+                if (deltaX > 20 || deltaY > 20) { // Increased threshold to be even less sensitive
+                    if (!longPressTriggered && !touchMoved) {
+                        touchMoved = true;
+                        if (longPressTimer) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+                            console.log('🚫 Long press cancelled due to movement:', { deltaX, deltaY });
+                        }
+                    }
+                }
             }, { passive: false });
 
             canvas.addEventListener('touchend', function(e) {
                 if (e.changedTouches.length > 1) return; // ignore multi-touch
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // If long press was already triggered, don't cancel it
+                if (longPressTriggered) {
+                    console.log('✅ Long press was triggered, keeping it active');
+                    canvasTouchActive = false;
+                    touchMoved = false; // Reset for next touch
+                    longPressTriggered = false; // Reset for next touch
+                    return;
+                }
+                
+                // Only clear timer if long press wasn't triggered
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                    const touchDuration = Date.now() - touchStartTime;
+                    console.log('🚫 Long press timer cancelled - touch too short:', touchDuration + 'ms');
+                }
+
                 if (!gameStartRequested) {
                     canvasTouchActive = false;
+                    touchMoved = false; // Reset for next touch
                     return;
                 }
 
@@ -2230,10 +2434,12 @@
                     if (now - lastTapTime > TAP_DEBOUNCE) {
                         lastTapTime = now;
                         simulateKeyPress('ArrowUp');
+                        console.log('🔄 Tap rotate executed');
                     } else {
                         console.log('Tap ignored due to debounce');
                     }
                     canvasTouchActive = false;
+                    touchMoved = false; // Reset for next touch
                     return;
                 }
 
@@ -2451,7 +2657,9 @@
                     
                     // Add tap to restart functionality
                     overlay.onclick = () => {
+                        console.log('🎮 Mobile restart tap detected');
                         hideMobileGameOver();
+                        resetGameInfo(); // Force immediate reset
                         simulateKeyPress('Enter');
                     };
                 }
@@ -2474,6 +2682,12 @@
                 canvas.style.opacity = '1';
                 canvas.style.pointerEvents = 'auto';
             }
+            
+            // Force stats update after game restart
+            console.log('Forcing stats update after game restart');
+            setTimeout(() => {
+                updateStatsFromCpp();
+            }, 100); // Small delay to ensure C++ has updated
         }
         
         // Enhanced game over detection for mobile
@@ -2498,8 +2712,21 @@
                         
                         // Game restarted
                         if (gameRunning && currentScore === 0 && lastKnownScore > 0) {
+                            console.log('Game restart detected - forcing stats update');
                             hideMobileGameOver();
                             lastKnownScore = 0;
+                            // Force immediate stats update
+                            updateStatsFromCpp();
+                            
+                            // More frequent updates for first few seconds after restart
+                            let restartUpdateCount = 0;
+                            const restartUpdateInterval = setInterval(() => {
+                                updateStatsFromCpp();
+                                restartUpdateCount++;
+                                if (restartUpdateCount >= 10) { // 10 updates = 1 second
+                                    clearInterval(restartUpdateInterval);
+                                }
+                            }, 100); // Update every 100ms for 1 second
                         }
                     } catch(e) {
                         // Ignore errors accessing Module functions
@@ -2615,6 +2842,119 @@
         setTimeout(() => {
             // Il gioco si caricherà ma non si avvierà automaticamente
         }, 100);
+        
+        // Mobile pause menu functions
+        function showMobilePauseMenu() {
+            console.log('📱 Long press detected - checking if menu already active');
+            
+            // Check if menu is already active
+            const menu = document.getElementById('mobilePauseMenu');
+            if (menu && menu.classList.contains('active')) {
+                console.log('📱 Menu già attivo - ignorando long press');
+                return;
+            }
+            
+            // Show menu first
+            if (menu) {
+                mobilePauseActive = true; // Set flag to disable sync
+                menu.classList.add('active');
+                console.log('📱 Pause menu shown with overlay');
+            }
+            
+            // Then pause both JavaScript AND C++ game
+            setTimeout(() => {
+                if (!isGameOver && !isPaused) {
+                    console.log('📱 Pausing JavaScript state first');
+                    forcePause();
+                    
+                    // Now pause C++ game engine (only once!)
+                    setTimeout(() => {
+                        console.log('📱 Pausing C++ game engine');
+                        simulateKeyPress('Escape');
+                    }, 50);
+                } else {
+                    console.log('📱 Game already paused or over, just showing menu');
+                }
+            }, 100);
+        }
+        
+        function hideMobilePauseMenu() {
+            const menu = document.getElementById('mobilePauseMenu');
+            if (menu) {
+                menu.classList.remove('active');
+                console.log('📱 Pause menu hidden');
+                
+                // Re-enable sync after a short delay
+                setTimeout(() => {
+                    mobilePauseActive = false;
+                    console.log('📱 Mobile pause system deactivated - sync re-enabled');
+                }, 500);
+            }
+        }
+        
+        // Mobile pause menu event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const resumeBtn = document.getElementById('resumeGameBtn');
+            const restartBtn = document.getElementById('restartGameBtn');
+            
+            if (resumeBtn) {
+                resumeBtn.addEventListener('click', () => {
+                    console.log('📱 Resume clicked');
+                    hideMobilePauseMenu();
+                    
+                    // Resume both JavaScript AND C++ game
+                    setTimeout(() => {
+                        if (isPaused) {
+                            console.log('📱 Resuming JavaScript state first');
+                            forceResume();
+                            
+                            // Now resume C++ game engine (only once!)
+                            setTimeout(() => {
+                                console.log('📱 Resuming C++ game engine');
+                                simulateKeyPress('Escape');
+                            }, 50);
+                        }
+                    }, 100);
+                });
+            }
+            
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    console.log('📱 Restart clicked');
+                    hideMobilePauseMenu();
+                    
+                    // Wait a moment then restart
+                    setTimeout(() => {
+                        resetGameInfo();
+                        simulateKeyPress('Enter');
+                        console.log('📱 Game restarted');
+                    }, 100);
+                });
+            }
+            
+            // Close menu when clicking outside (but resume game)
+            const menu = document.getElementById('mobilePauseMenu');
+            if (menu) {
+                document.addEventListener('click', (e) => {
+                    if (!menu.contains(e.target) && menu.classList.contains('active')) {
+                        console.log('📱 Menu closed by clicking outside');
+                        hideMobilePauseMenu();
+                        
+                        // Resume game when closing menu
+                        setTimeout(() => {
+                            if (typeof Module !== 'undefined' && Module._isGamePaused) {
+                                const isPaused = Module._isGamePaused();
+                                if (isPaused) {
+                                    simulateKeyPress('Escape');
+                                    console.log('📱 Game auto-resumed');
+                                }
+                            }
+                        }, 100);
+                    }
+                });
+            }
+        });
+        
     </script>
     
     <!-- Script del gioco generato da Emscripten -->
