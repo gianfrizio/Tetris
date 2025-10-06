@@ -529,7 +529,7 @@ public:
         
         if (game_over) {
             renderText("GAME OVER", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2 - 40, white);
-            renderText("Premi INVIO per ricominciare", WINDOW_WIDTH/2 - 140, WINDOW_HEIGHT/2, white);
+            renderText("Tap per riavviare", WINDOW_WIDTH/2 - 70, WINDOW_HEIGHT/2, white);
         }
         
         // Present the rendered frame / Presenta il frame renderizzato

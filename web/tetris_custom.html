@@ -232,6 +232,21 @@
             background: #000;
             display: block;
             margin: 0 auto;
+
+            /* Default canvas sizing: let JS set internal buffer but allow CSS scaling */
+            width: auto;      /* preserve default on desktop */
+            height: auto;
+            max-width: 100%;  /* never overflow its container */
+            touch-action: none; /* prevent double interactions on mobile */
+        }
+
+        /* Responsive canvas wrapper to control visual scaling */
+        .game-canvas {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
         }
 
         /* Controlli */
@@ -364,6 +379,27 @@
             .game-wrapper {
                 padding: 1rem;
                 margin: 0 0.5rem 1rem;
+            }
+
+            /* Remove minimum height forcing overflow on small screens */
+            .game-layout {
+                min-height: auto;
+            }
+
+            /* Scale canvas so it always fits into the viewport
+               - max-width limits visual width
+               - max-height prevents it from exceeding available vertical space */
+            .game-canvas {
+                width: 100%;
+                max-width: 90vw;
+            }
+
+            #canvas {
+                /* Let the canvas scale to fit the screen while keeping aspect ratio */
+                width: 100% !important;
+                height: auto !important;
+                max-width: 520px; /* reasonable upper bound for tablets */
+                max-height: calc(100vh - 220px); /* reserve space for header/controls/footer */
             }
 
             .game-layout {
@@ -703,6 +739,109 @@
             display: none;
         }
 
+        /* Mobile game control buttons */
+        .mobile-game-controls {
+            display: none;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            padding: 0 1rem;
+        }
+
+        .mobile-btn {
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f0f23;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+            min-width: 120px;
+        }
+
+        .mobile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
+        }
+
+        .mobile-btn:active {
+            transform: translateY(0);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #ffb74d, #ff9800);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #81c784, #4caf50);
+        }
+
+        /* Mobile Game Over Overlay */
+        .mobile-gameover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 35, 0.98);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+        }
+        
+        /* Hide canvas on mobile when game over overlay is active */
+        @media (max-width: 768px) {
+            .mobile-gameover-overlay.active ~ * #canvas {
+                visibility: hidden !important;
+            }
+        }
+
+        .mobile-gameover-content {
+            text-align: center;
+            padding: 2rem;
+            max-width: 90%;
+        }
+
+        .mobile-gameover-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff5722;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+        }
+
+        .mobile-gameover-score {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #64ffda;
+            margin-bottom: 2rem;
+        }
+
+        .mobile-gameover-instruction {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Desktop-only elements (hidden on mobile) */
+        .desktop-only {
+            display: block;
+        }
+
         /* Show mobile elements on small screens */
         @media (max-width: 768px) {
             .mobile-instructions {
@@ -711,6 +850,22 @@
             
             .mobile-only {
                 display: flex;
+            }
+            
+            .desktop-only {
+                display: none !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
             }
         }
 
@@ -766,6 +921,24 @@
                 Completa le righe per guadagnare punti<br>
                 Più veloce vai, più punti ottieni!</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile Game Over Overlay -->
+    <div class="mobile-gameover-overlay" id="mobileGameOverOverlay">
+        <div class="mobile-gameover-content">
+            <div class="mobile-gameover-title">GAME OVER</div>
+            <div class="mobile-gameover-score" id="mobileGameOverScore">Punteggio: 0</div>
+            <div class="mobile-gameover-instruction">👆 Tap per riavviare</div>
+        </div>
+    </div>
+
+    <!-- Mobile Game Over Overlay -->
+    <div class="mobile-gameover-overlay" id="mobileGameOverOverlay">
+        <div class="mobile-gameover-content">
+            <div class="mobile-gameover-title">GAME OVER</div>
+            <div class="mobile-gameover-score" id="mobileGameOverScore">Punteggio: 0</div>
+            <div class="mobile-gameover-instruction">👆 Tap per riavviare</div>
         </div>
     </div>
 
@@ -841,7 +1014,7 @@
             </div>
             
             <!-- Controlli -->
-            <div class="controls">
+            <div class="controls desktop-only">
                 <div class="control-item">
                     <div class="control-key">← →</div>
                     <div class="control-desc">Movimento</div>
@@ -885,6 +1058,12 @@
                         <span class="touch-action">Caduta veloce</span>
                     </div>
                 </div>
+                
+                <!-- Mobile Game Controls -->
+                <div class="mobile-game-controls">
+                    <button class="mobile-btn pause-btn" id="mobilePauseBtn">⏸️ Pausa</button>
+                    <button class="mobile-btn restart-btn" id="mobileRestartBtn">🔄 Riavvia</button>
+                </div>
             </div>
         </div>
     </div>
@@ -897,27 +1076,29 @@
 
     <!-- Script Emscripten (modificato) -->
     <script>
-        // Elementi DOM
-        var startScreen = document.getElementById('startScreen');
-        var playButton = document.getElementById('playButton');
-        var customLoading = document.getElementById('customLoading');
-        var loadingProgress = document.getElementById('loadingProgress');
-        var gameContainer = document.querySelector('.game-container');
-        
-        var gameReady = false;
-        var gameStarted = false;
-        var gameStartRequested = false;
+    // Elementi DOM
+    const startScreen = document.getElementById('startScreen');
+    const playButton = document.getElementById('playButton');
+    const customLoading = document.getElementById('customLoading');
+    const loadingProgress = document.getElementById('loadingProgress');
+    const gameContainer = document.querySelector('.game-container');
+
+    let gameReady = false;
+    let gameStarted = false;
+    let gameStartRequested = false;
         
         // Nascondi il loading inizialmente
         customLoading.style.display = 'none';
         
-        var Module = {
+        // Ensure Module is available on the global object for Emscripten compatibility
+        globalThis.Module = globalThis.Module || {};
+        Object.assign(globalThis.Module, {
             canvas: document.getElementById('canvas'),
-            
+
             print: function(...args) {
                 console.log(...args);
             },
-            
+
             setStatus: function(text) {
                 // Carica il gioco silenziosamente in background
                 if (text) {
@@ -951,7 +1132,7 @@
                     gameReady = true;
                 }
             }
-        };
+        });
 
         // Gestione pulsante PLAY
         playButton.addEventListener('click', function() {
@@ -975,6 +1156,9 @@
                     setTimeout(() => {
                         customLoading.style.display = 'none';
                         gameContainer.classList.add('visible');
+                        
+                        // Fit canvas to viewport
+                        fitCanvasToViewport();
                         
                         // Avvia il gioco chiamando la funzione C++
                         let gameStarted = false;
@@ -1911,20 +2095,109 @@
         // Marca l'inizio del gioco per le statistiche
         window.gameStartTime = Date.now();
         
-        // Touch controls for mobile devices
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchStartTime = 0;
-        const minSwipeDistance = 25; // Più sensibile per mobile
-        const maxTapTime = 400; // Più tempo per tap su mobile
+        // Responsive layout function
+        function fitCanvasToViewport() {
+            console.log('Fitting canvas to viewport...');
+            
+            const gameWrapper = document.querySelector('.game-wrapper');
+            const gameLayout = document.querySelector('.game-layout');
+            const canvas = document.getElementById('canvas');
+            
+            if (!gameWrapper || !gameLayout || !canvas) return;
+            
+            // Calculate available space
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const isMobile = viewportWidth <= 768;
+            
+            if (isMobile) {
+                // Mobile: smaller canvas to fit stats and info panels
+                const reservedHeight = 280; // header + stats + info + footer + padding
+                const maxCanvasHeight = Math.min(viewportHeight - reservedHeight, 420);
+                const maxCanvasWidth = Math.min(viewportWidth * 0.7, 360); // smaller width
+                
+                canvas.style.maxWidth = maxCanvasWidth + 'px';
+                canvas.style.maxHeight = maxCanvasHeight + 'px';
+                canvas.style.width = '100%';
+                canvas.style.height = 'auto';
+                
+                // Ensure canvas is perfectly centered and aligned with stats/info
+                canvas.style.display = 'block';
+                canvas.style.margin = '0 auto';
+                canvas.style.position = 'static';
+                canvas.style.left = 'auto';
+                canvas.style.transform = 'none';
+                
+                // Center the game wrapper and ensure consistent alignment
+                gameWrapper.style.margin = '0 auto';
+                gameWrapper.style.maxWidth = '95vw';
+                gameWrapper.style.textAlign = 'center';
+                
+                // Ensure game canvas container aligns with stats panels
+                const gameCanvasContainer = document.querySelector('.game-canvas');
+                if (gameCanvasContainer) {
+                    gameCanvasContainer.style.justifyContent = 'center';
+                    gameCanvasContainer.style.alignItems = 'center';
+                    gameCanvasContainer.style.width = '100%';
+                    gameCanvasContainer.style.textAlign = 'center';
+                }
+            } else {
+                // Desktop: center layout with stats panels
+                canvas.style.maxWidth = '';
+                canvas.style.maxHeight = '';
+                canvas.style.width = 'auto';
+                canvas.style.height = 'auto';
+                
+                // Center the game wrapper
+                gameWrapper.style.margin = '0 auto';
+                gameWrapper.style.maxWidth = '1200px';
+            }
+            
+            console.log('Canvas fitted:', { isMobile, viewportWidth, viewportHeight });
+        }
+        
+    // Touch controls for mobile devices
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let lastTapTime = 0;
+    const TAP_DEBOUNCE = 250; // ms
+    const TAP_HOLD_TIME = 300; // ms max for a tap
+    // Track whether a touch started on the canvas so body fallback ignores it
+    let canvasTouchActive = false;
+        // Throttle for lateral moves to prevent multiple rapid moves from a single swipe
+        let lastLateralMoveTime = 0;
+        const MOVE_THROTTLE_MS = 120; // ms between lateral moves
+
+        function attemptLateralMove(direction) {
+            const now = Date.now();
+            if (now - lastLateralMoveTime < MOVE_THROTTLE_MS) {
+                // too soon, ignore
+                //console.log('Lateral move throttled');
+                return false;
+            }
+            lastLateralMoveTime = now;
+            if (direction === 'left') simulateKeyPress('ArrowLeft');
+            else simulateKeyPress('ArrowRight');
+            return true;
+        }
 
         function addTouchControls() {
             const canvas = document.getElementById('canvas');
             if (!canvas) return;
 
+            // dynamically compute swipe threshold based on canvas size
+            function getMinSwipeDistance() {
+                const w = Math.max(200, canvas.clientWidth || window.innerWidth);
+                return Math.max(18, Math.min(60, Math.round(w * 0.12))); // 12% of canvas width, clamped
+            }
+
             // Prevent default touch behaviors
             canvas.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) return; // ignore multi-touch
                 e.preventDefault();
+                e.stopPropagation();
+                canvasTouchActive = true;
                 const touch = e.touches[0];
                 touchStartX = touch.clientX;
                 touchStartY = touch.clientY;
@@ -1932,8 +2205,13 @@
             }, { passive: false });
 
             canvas.addEventListener('touchend', function(e) {
+                if (e.changedTouches.length > 1) return; // ignore multi-touch
                 e.preventDefault();
-                if (!gameStartRequested) return;
+                e.stopPropagation();
+                if (!gameStartRequested) {
+                    canvasTouchActive = false;
+                    return;
+                }
 
                 const touch = e.changedTouches[0];
                 const touchEndX = touch.clientX;
@@ -1944,43 +2222,62 @@
                 const deltaY = touchEndY - touchStartY;
                 const deltaTime = touchEndTime - touchStartTime;
 
-                // Tap (rotate)
-                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < maxTapTime) {
-                    // Simulate UP arrow key press for rotation
-                    simulateKeyPress('ArrowUp');
-                }
-                // Horizontal swipe (move left/right)
-                else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                    if (deltaX > 0) {
-                        // Swipe right
-                        simulateKeyPress('ArrowRight');
+                const minSwipeDistance = getMinSwipeDistance();
+
+                // Short tap -> rotate (debounced)
+                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < TAP_HOLD_TIME) {
+                    const now = Date.now();
+                    if (now - lastTapTime > TAP_DEBOUNCE) {
+                        lastTapTime = now;
+                        simulateKeyPress('ArrowUp');
                     } else {
-                        // Swipe left
-                        simulateKeyPress('ArrowLeft');
+                        console.log('Tap ignored due to debounce');
                     }
+                    canvasTouchActive = false;
+                    return;
                 }
+
+                // Horizontal swipe (move left/right)
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) attemptLateralMove('right'); else attemptLateralMove('left');
+                    canvasTouchActive = false;
+                    return;
+                }
+
                 // Vertical swipe down (fast drop)
-                else if (deltaY > minSwipeDistance) {
+                if (deltaY > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
                     simulateKeyPress('ArrowDown');
+                    canvasTouchActive = false;
+                    return;
                 }
+
+                canvasTouchActive = false;
             }, { passive: false });
 
             // Prevent scrolling and zooming when touching the canvas
             canvas.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) return;
                 e.preventDefault();
             }, { passive: false });
         }
 
         function simulateKeyPress(key) {
             console.log('Simulating key press:', key);
-            
-            // Prova prima con SDL2 keydown event se Module è disponibile
-            if (typeof Module !== 'undefined' && Module.canvas) {
-                const keyCode = getKeyCode(key);
-                
-                // Simula keydown event direttamente sul canvas
-                const canvas = Module.canvas;
-                const keyEvent = new KeyboardEvent('keydown', {
+
+            // Prefer dispatching to the canvas element used by Module
+            const targetCanvas = (typeof Module !== 'undefined' && Module.canvas) ? Module.canvas : document.getElementById('canvas');
+            if (!targetCanvas) return;
+
+            const keyCode = getKeyCode(key) || 0;
+
+            try {
+                // Ensure the canvas has focus so SDL receives keyboard events
+                if (typeof targetCanvas.focus === 'function') {
+                    try { targetCanvas.focus({ preventScroll: true }); } catch(e) { targetCanvas.focus(); }
+                }
+
+                // Dispatch keydown
+                const keyDownEvent = new KeyboardEvent('keydown', {
                     key: key,
                     code: key,
                     keyCode: keyCode,
@@ -1988,12 +2285,21 @@
                     bubbles: true,
                     cancelable: true
                 });
-                
-                // Dispatch su canvas prima, poi document
-                canvas.dispatchEvent(keyEvent);
-                document.dispatchEvent(keyEvent);
-                
-                // Anche keyup per essere sicuri
+                targetCanvas.dispatchEvent(keyDownEvent);
+
+                // Also dispatch a keypress event which some engines expect
+                const keyPressEvent = new KeyboardEvent('keypress', {
+                    key: key,
+                    code: key,
+                    keyCode: keyCode,
+                    which: keyCode,
+                    bubbles: true,
+                    cancelable: true
+                });
+                targetCanvas.dispatchEvent(keyPressEvent);
+
+                // Hold key a bit longer to help native SDL handlers capture it
+                const KEY_HOLD_MS = 180;
                 setTimeout(() => {
                     const keyUpEvent = new KeyboardEvent('keyup', {
                         key: key,
@@ -2003,9 +2309,10 @@
                         bubbles: true,
                         cancelable: true
                     });
-                    canvas.dispatchEvent(keyUpEvent);
-                    document.dispatchEvent(keyUpEvent);
-                }, 50);
+                    targetCanvas.dispatchEvent(keyUpEvent);
+                }, KEY_HOLD_MS);
+            } catch (e) {
+                console.error('simulateKeyPress error:', e);
             }
         }
         
@@ -2032,8 +2339,21 @@
         // Fallback: aggiungi controlli touch anche al body per essere sicuri
         function addBodyTouchControls() {
             console.log('Adding fallback touch controls to body');
-            
+
+            // Reuse same helpers as canvas handlers
+            function getMinSwipeDistanceForBody() {
+                const canvas = document.getElementById('canvas');
+                if (canvas) {
+                    const w = Math.max(200, canvas.clientWidth || window.innerWidth);
+                    return Math.max(18, Math.min(60, Math.round(w * 0.12)));
+                }
+                return Math.max(18, Math.round(window.innerWidth * 0.12));
+            }
+
             document.body.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) return;
+                // If the touch originated on the canvas we should ignore here
+                if (canvasTouchActive) return;
                 if (gameStartRequested) {
                     const touch = e.touches[0];
                     touchStartX = touch.clientX;
@@ -2041,30 +2361,46 @@
                     touchStartTime = Date.now();
                 }
             }, { passive: false });
-            
+
             document.body.addEventListener('touchend', function(e) {
+                if (e.changedTouches.length > 1) return;
+                // Ignore if canvas handled it
+                if (canvasTouchActive) return;
                 if (!gameStartRequested) return;
-                
+
+                e.stopPropagation();
+
                 const touch = e.changedTouches[0];
                 const touchEndX = touch.clientX;
                 const touchEndY = touch.clientY;
                 const touchEndTime = Date.now();
-                
+
                 const deltaX = touchEndX - touchStartX;
                 const deltaY = touchEndY - touchStartY;
                 const deltaTime = touchEndTime - touchStartTime;
-                
-                // Stessa logica dei controlli canvas
-                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < maxTapTime) {
-                    simulateKeyPress('ArrowUp');
-                } else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                    if (deltaX > 0) {
-                        simulateKeyPress('ArrowRight');
-                    } else {
-                        simulateKeyPress('ArrowLeft');
+
+                const minSwipeDistance = getMinSwipeDistanceForBody();
+
+                // Tap (rotate) with debounce
+                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < TAP_HOLD_TIME) {
+                    const now = Date.now();
+                    if (now - lastTapTime > TAP_DEBOUNCE) {
+                        lastTapTime = now;
+                        simulateKeyPress('ArrowUp');
                     }
-                } else if (deltaY > minSwipeDistance && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    return;
+                }
+
+                // Horizontal swipe
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) attemptLateralMove('right'); else attemptLateralMove('left');
+                    return;
+                }
+
+                // Vertical swipe down
+                if (deltaY > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
                     simulateKeyPress('ArrowDown');
+                    return;
                 }
             }, { passive: false });
         }
@@ -2086,6 +2422,195 @@
 
         observer.observe(gameContainer, { attributes: true });
 
+        // Add resize and orientation change listeners
+        window.addEventListener('resize', fitCanvasToViewport);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(fitCanvasToViewport, 100); // delay for orientation to complete
+        });
+        
+        // Mobile game over detection and overlay
+        let mobileGameOverActive = false;
+        
+        function showMobileGameOver(score) {
+            if (window.innerWidth <= 768) { // Only on mobile
+                mobileGameOverActive = true;
+                const overlay = document.getElementById('mobileGameOverOverlay');
+                const scoreElement = document.getElementById('mobileGameOverScore');
+                const canvas = document.getElementById('canvas');
+                
+                if (overlay && scoreElement) {
+                    scoreElement.textContent = `Punteggio: ${score.toLocaleString()}`;
+                    overlay.style.display = 'flex';
+                    overlay.classList.add('active');
+                    
+                    // Hide canvas to prevent native game over text from showing
+                    if (canvas) {
+                        canvas.style.opacity = '0.1';
+                        canvas.style.pointerEvents = 'none';
+                    }
+                    
+                    // Add tap to restart functionality
+                    overlay.onclick = () => {
+                        hideMobileGameOver();
+                        simulateKeyPress('Enter');
+                    };
+                }
+            }
+        }
+        
+        function hideMobileGameOver() {
+            mobileGameOverActive = false;
+            const overlay = document.getElementById('mobileGameOverOverlay');
+            const canvas = document.getElementById('canvas');
+            
+            if (overlay) {
+                overlay.style.display = 'none';
+                overlay.classList.remove('active');
+                overlay.onclick = null;
+            }
+            
+            // Restore canvas visibility
+            if (canvas) {
+                canvas.style.opacity = '1';
+                canvas.style.pointerEvents = 'auto';
+            }
+        }
+        
+        // Enhanced game over detection for mobile
+        let lastKnownScore = 0;
+        let gameOverCheckInterval;
+        
+        function startGameOverMonitoring() {
+            if (gameOverCheckInterval) clearInterval(gameOverCheckInterval);
+            
+            gameOverCheckInterval = setInterval(() => {
+                if (typeof Module !== 'undefined' && Module._getScore && Module._isGameRunning) {
+                    try {
+                        const currentScore = Module._getScore();
+                        const gameRunning = Module._isGameRunning();
+                        
+                        // Game over detected: not running and we had a score
+                        if (!gameRunning && currentScore > 0 && !mobileGameOverActive) {
+                            console.log('Mobile game over detected, score:', currentScore);
+                            showMobileGameOver(currentScore);
+                            lastKnownScore = currentScore;
+                        }
+                        
+                        // Game restarted
+                        if (gameRunning && currentScore === 0 && lastKnownScore > 0) {
+                            hideMobileGameOver();
+                            lastKnownScore = 0;
+                        }
+                    } catch(e) {
+                        // Ignore errors accessing Module functions
+                    }
+                }
+            }, 500); // Check every 500ms
+        }
+        
+        // Mobile game control buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const pauseBtn = document.getElementById('mobilePauseBtn');
+            const restartBtn = document.getElementById('mobileRestartBtn');
+            
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', () => {
+                    console.log('Mobile pause clicked');
+                    simulateKeyPress('Escape');
+                    
+                    // Toggle button text
+                    if (pauseBtn.textContent.includes('Pausa')) {
+                        pauseBtn.textContent = '▶️ Riprendi';
+                    } else {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+            
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    console.log('Mobile restart clicked');
+                    simulateKeyPress('Enter');
+                    
+                    // Reset pause button text
+                    if (pauseBtn) {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+        });
+        
+        // Mobile game control buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const pauseBtn = document.getElementById('mobilePauseBtn');
+            const restartBtn = document.getElementById('mobileRestartBtn');
+            
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', () => {
+                    console.log('Mobile pause clicked');
+                    simulateKeyPress('Escape');
+                    
+                    // Toggle button text
+                    if (pauseBtn.textContent.includes('Pausa')) {
+                        pauseBtn.textContent = '▶️ Riprendi';
+                    } else {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+            
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    console.log('Mobile restart clicked');
+                    simulateKeyPress('Enter');
+                    
+                    // Reset pause button text
+                    if (pauseBtn) {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+        });
+        
+        // Mobile game control buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const pauseBtn = document.getElementById('mobilePauseBtn');
+            const restartBtn = document.getElementById('mobileRestartBtn');
+            
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', () => {
+                    console.log('Mobile pause clicked');
+                    simulateKeyPress('Escape');
+                    
+                    // Toggle button text
+                    if (pauseBtn.textContent.includes('Pausa')) {
+                        pauseBtn.textContent = '▶️ Riprendi';
+                    } else {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+            
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    console.log('Mobile restart clicked');
+                    simulateKeyPress('Enter');
+                    
+                    // Reset pause button text
+                    if (pauseBtn) {
+                        pauseBtn.textContent = '⏸️ Pausa';
+                    }
+                });
+            }
+            
+            // Start game over monitoring for mobile
+            setTimeout(() => {
+                if (window.innerWidth <= 768) {
+                    startGameOverMonitoring();
+                }
+            }, 2000);
+        });
+        
         // Precarica il gioco in background (senza avviarlo)
         setTimeout(() => {
             // Il gioco si caricherà ma non si avvierà automaticamente
