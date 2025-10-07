@@ -60,7 +60,7 @@ em++ tetris_web.cpp \
     -s WASM=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s INITIAL_MEMORY=33554432 \
-    -s EXPORTED_FUNCTIONS='["_main", "_startTetrisGame", "_restartTetrisGame", "_getScore", "_getLevel", "_getLines", "_isGameRunning", "_isGamePaused"]' \
+    -s EXPORTED_FUNCTIONS='["_main", "_startTetrisGame", "_restartTetrisGame", "_getScore", "_getLevel", "_getLines", "_isGameRunning", "_isGamePaused", "_setVolume", "_getVolume", "_muteAudio", "_toggleMute", "_isAudioMuted"]' \
     -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
     --preload-file web/audio@audio \
     --use-preload-plugins \

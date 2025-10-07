@@ -112,6 +112,10 @@ private:
     std::unique_ptr<Mix_Music, decltype(&Mix_FreeMusic)> music;           // Background music / Musica di sottofondo
     
 public:
+    // Audio control variables / Variabili controllo audio
+    int master_volume;       // Master volume (0-128) / Volume principale (0-128)
+    bool audio_muted;        // Is audio muted? / È l'audio mutato?
+    
     // Public game statistics and state / Statistiche e stato di gioco pubblici
     bool game_over;          // Is game over? / È finito il gioco?
     bool pause_game;         // Is game paused? / È in pausa il gioco?
@@ -126,6 +130,7 @@ public:
           sound_gameover(nullptr, Mix_FreeChunk),
           sound_move(nullptr, Mix_FreeChunk),
           music(nullptr, Mix_FreeMusic),
+          master_volume(38), audio_muted(false),  // Volume 30% di default (38/128 ≈ 30%)
           pause_game(false), game_over(false),
           score(0), level(1), lines_cleared_total(0) {
         
@@ -206,7 +211,47 @@ public:
             return false;
         }
         
+        // Set initial volume / Imposta volume iniziale
+        setMasterVolume(master_volume);
+        
         return true;
+    }
+    
+    // Audio control functions / Funzioni controllo audio
+    void setMasterVolume(int volume) {
+        master_volume = std::max(0, std::min(128, volume));  // Clamp to 0-128
+        
+        if (audio_muted) return;  // Don't change volume if muted / Non cambiare volume se mutato
+        
+        // Set volume for music and sound effects / Imposta volume per musica ed effetti
+        Mix_VolumeMusic(master_volume);
+        Mix_Volume(-1, master_volume);  // All channels / Tutti i canali
+    }
+    
+    void setAudioMuted(bool muted) {
+        audio_muted = muted;
+        
+        if (audio_muted) {
+            // Mute all audio / Muta tutto l'audio
+            Mix_VolumeMusic(0);
+            Mix_Volume(-1, 0);
+        } else {
+            // Restore volume / Ripristina volume
+            Mix_VolumeMusic(master_volume);
+            Mix_Volume(-1, master_volume);
+        }
+    }
+    
+    void toggleAudioMute() {
+        setAudioMuted(!audio_muted);
+    }
+    
+    int getMasterVolume() const {
+        return master_volume;
+    }
+    
+    bool isAudioMuted() const {
+        return audio_muted;
     }
     
     void cleanup() {
@@ -329,7 +374,7 @@ public:
         
         // Update score and level if lines were cleared / Aggiorna punteggio e livello se sono state eliminate linee
         if (lines_cleared > 0) {
-            Mix_PlayChannel(-1, sound_clear.get(), 0);
+            if (!audio_muted) Mix_PlayChannel(-1, sound_clear.get(), 0);
             score += lines_cleared * 100 * level;  // Score calculation / Calcolo punteggio
             lines_cleared_total += lines_cleared;
             
@@ -433,7 +478,7 @@ public:
         spawnPiece();
         
         // Restart music if needed / Riavvia musica se necessario
-        if (!Mix_PlayingMusic()) {
+        if (!Mix_PlayingMusic() && !audio_muted) {
             Mix_PlayMusic(music.get(), -1);
         }
         
@@ -477,14 +522,14 @@ public:
                         case SDLK_LEFT:  // Move left / Muovi a sinistra
                             if (!checkCollision(current_piece, current_piece.x - 1, current_piece.y, current_piece.rotation)) {
                                 current_piece.x--;
-                                Mix_PlayChannel(-1, sound_move.get(), 0);
+                                if (!audio_muted) Mix_PlayChannel(-1, sound_move.get(), 0);
                             }
                             break;
                             
                         case SDLK_RIGHT:  // Move right / Muovi a destra
                             if (!checkCollision(current_piece, current_piece.x + 1, current_piece.y, current_piece.rotation)) {
                                 current_piece.x++;
-                                Mix_PlayChannel(-1, sound_move.get(), 0);
+                                if (!audio_muted) Mix_PlayChannel(-1, sound_move.get(), 0);
                             }
                             break;
                             
@@ -492,7 +537,7 @@ public:
                             int new_rot = (current_piece.rotation + 1) % 4;
                             if (!checkCollision(current_piece, current_piece.x, current_piece.y, new_rot)) {
                                 current_piece.rotation = new_rot;
-                                Mix_PlayChannel(-1, sound_rotate.get(), 0);
+                                if (!audio_muted) Mix_PlayChannel(-1, sound_rotate.get(), 0);
                             }
                             break;
                         }
@@ -500,7 +545,7 @@ public:
                         case SDLK_DOWN:  // Soft drop / Caduta accelerata
                             if (!checkCollision(current_piece, current_piece.x, current_piece.y + 1, current_piece.rotation)) {
                                 current_piece.y++;
-                                Mix_PlayChannel(-1, sound_move.get(), 0);
+                                if (!audio_muted) Mix_PlayChannel(-1, sound_move.get(), 0);
                             }
                             break;
                     }
@@ -531,7 +576,7 @@ public:
                 clearLines();               // Check for completed lines / Controlla linee completate
                 
                 if (isGameOver()) {         // Check if game is over / Controlla se il gioco è finito
-                    Mix_PlayChannel(-1, sound_gameover.get(), 0);
+                    if (!audio_muted) Mix_PlayChannel(-1, sound_gameover.get(), 0);
                     game_over = true;
                     pause_game = false;  // Assicurati che non sia in pausa quando è game over
                     std::cout << "GAME OVER detected!" << std::endl;
@@ -628,7 +673,9 @@ public:
     void startGame() {
         if (gameInitialized && !gameStartRequested) {
             gameStartRequested = true;
-            Mix_PlayMusic(music.get(), -1);
+            if (!audio_muted) {
+                Mix_PlayMusic(music.get(), -1);
+            }
             spawnPiece();
             std::cout << "Game started!" << std::endl;
         }
@@ -800,6 +847,41 @@ extern "C" {
     bool isGamePaused() {
         if (TetrisGame::instance) {
             return TetrisGame::instance->pause_game;
+        }
+        return false;
+    }
+    
+    // Audio control functions / Funzioni controllo audio
+    void setVolume(int volume) {
+        if (TetrisGame::instance) {
+            TetrisGame::instance->setMasterVolume(volume);
+        }
+    }
+    
+    int getVolume() {
+        if (TetrisGame::instance) {
+            // Converti da SDL (0-128) a UI (0-100)
+            int sdlVolume = TetrisGame::instance->getMasterVolume();
+            return (sdlVolume * 100 + 64) / 128; // +64 per arrotondamento
+        }
+        return 30;  // Default volume 30% / Volume di default 30%
+    }
+    
+    void muteAudio(bool muted) {
+        if (TetrisGame::instance) {
+            TetrisGame::instance->setAudioMuted(muted);
+        }
+    }
+    
+    void toggleMute() {
+        if (TetrisGame::instance) {
+            TetrisGame::instance->toggleAudioMute();
+        }
+    }
+    
+    bool isAudioMuted() {
+        if (TetrisGame::instance) {
+            return TetrisGame::instance->isAudioMuted();
         }
         return false;
     }

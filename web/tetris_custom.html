@@ -150,6 +150,7 @@
             flex: 0 0 200px;
             display: flex;
             flex-direction: column;
+            gap: 1rem; /* Spazio tra i pannelli nella colonna */
         }
 
         .game-canvas {
@@ -169,8 +170,48 @@
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Solo il pannello stats a sinistra sarà sticky */
+        .left-stats .stats-panel {
             position: sticky;
             top: 2rem;
+        }
+        
+        /* Debug: assicurati che i pannelli non si sovrappongano */
+        .right-info .info-panel:nth-child(1) {
+            order: 1;
+        }
+        
+        .right-info .info-panel:nth-child(2) {
+            order: 2;
+        }
+        
+        /* Controllo specifico per pannelli nella colonna destra */
+        .right-info {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            align-items: stretch !important;
+        }
+        
+        .right-info .info-panel {
+            position: static !important; /* Forza posizionamento statico per evitare sovrapposizioni */
+            margin: 0 !important; /* Rimuovi tutti i margin */
+            z-index: auto !important;
+            transform: none !important;
+        }
+        
+        .right-info .info-panel.audio-controls {
+            position: static !important;
+            margin-top: 0 !important;
+        }
+        
+        /* Rimuovi sticky su mobile per evitare conflitti */
+        @media (max-width: 768px) {
+            .stats-panel, .info-panel {
+                position: static;
+            }
         }
 
         .stats-title, .info-title {
@@ -1467,6 +1508,213 @@
         @media (max-width: 768px) {
             .desktop-pause-menu {
                 display: none !important;
+            }
+        }
+
+        /* ==================== CONTROLLI AUDIO ==================== */
+        
+        .audio-controls {
+            margin-top: 0; /* Rimuovo il margin per usare il gap del parent */
+            position: relative;
+            touch-action: manipulation; /* Previeni comportamenti touch indesiderati */
+        }
+        
+        .volume-slider {
+            touch-action: manipulation; /* Permetti solo pan-x per lo slider */
+        }
+        
+        .mute-btn {
+            touch-action: manipulation; /* Previeni double-tap zoom */
+        }
+        
+        /* Forza il corretto posizionamento dei pannelli info */
+        .right-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .right-info .info-panel {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .volume-control {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        
+        .volume-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(45deg, #64ffda, #2196f3);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(100, 255, 218, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.6);
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(45deg, #64ffda, #2196f3);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(100, 255, 218, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.6);
+        }
+        
+        .volume-slider::-moz-range-track {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .volume-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64ffda;
+            min-width: 35px;
+            text-align: center;
+            background: rgba(100, 255, 218, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+        
+        .mute-control {
+            justify-content: center !important;
+        }
+        
+        .mute-btn {
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: #0f0f23;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+            min-width: 100px;
+            justify-content: center;
+        }
+        
+        .mute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
+        }
+        
+        .mute-btn:active {
+            transform: translateY(0);
+        }
+        
+        .mute-btn.muted {
+            background: linear-gradient(135deg, #ff5722, #e64a19);
+            color: #ffffff;
+        }
+        
+        .mute-btn.muted:hover {
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+        }
+        
+        .mute-icon {
+            font-size: 1.1rem;
+        }
+        
+        .mute-text {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Mobile adjustments per controlli audio */
+        @media (max-width: 768px) {
+            .audio-controls {
+                /* Rimuovi l'order che sposta i controlli in cima */
+                margin-bottom: 1rem;
+                margin-top: 1rem;
+            }
+            
+            .volume-control {
+                padding: 1rem;
+            }
+            
+            .volume-slider-container {
+                gap: 1rem;
+            }
+            
+            .volume-slider {
+                height: 8px;
+            }
+            
+            .volume-slider::-webkit-slider-thumb {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .volume-slider::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .volume-value {
+                font-size: 1rem;
+                min-width: 40px;
+                padding: 0.3rem 0.6rem;
+            }
+            
+            .mute-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+                min-width: 120px;
+            }
+            
+            .mute-icon {
+                font-size: 1.2rem;
+            }
+            
+            .mute-text {
+                font-size: 0.9rem;
             }
         }
 
@@ -4031,6 +4279,27 @@
                         <div class="info-item">
                             <span class="info-label">Record</span>
                             <span class="info-value" id="highScore">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Controls / Controlli Audio -->
+                    <div class="info-panel audio-controls">
+                        <h3 class="info-title">🔊 AUDIO</h3>
+                        
+                        <div class="info-item volume-control">
+                            <span class="info-label">Volume</span>
+                            <div class="volume-slider-container">
+                                <input type="range" id="volume-slider" class="volume-slider" 
+                                       min="0" max="100" value="30" step="1">
+                                <span class="volume-value" id="volume-value">30</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mute-control">
+                            <button id="mute-button" class="mute-btn">
+                                <span class="mute-icon">🔊</span>
+                                <span class="mute-text">Mute</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -7089,6 +7358,170 @@
                 }, 500);
             }
         }
+
+        // ==================== CONTROLLI AUDIO ====================
+        
+        // Variabili globali per controllo audio
+        let audioInitialized = false;
+        
+        // Inizializza controlli audio
+        function initAudioControls() {
+            if (audioInitialized) return;
+            
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeValue = document.getElementById('volume-value');
+            const muteButton = document.getElementById('mute-button');
+            const muteIcon = muteButton.querySelector('.mute-icon');
+            const muteText = muteButton.querySelector('.mute-text');
+            
+            if (!volumeSlider || !volumeValue || !muteButton) {
+                console.log('Audio controls not found, retrying...');
+                setTimeout(initAudioControls, 500);
+                return;
+            }
+            
+            console.log('🔊 Initializing audio controls...');
+            
+            // Carica impostazioni salvate
+            const savedVolume = localStorage.getItem('tetris-volume');
+            const savedMuted = localStorage.getItem('tetris-muted') === 'true';
+            
+            if (savedVolume !== null) {
+                const volume = parseInt(savedVolume); // Valore 0-100
+                volumeSlider.value = volume;
+                volumeValue.textContent = volume;
+                
+                // Converti e applica il volume se il modulo è caricato
+                if (typeof Module !== 'undefined' && Module._setVolume) {
+                    const sdlVolume = Math.round((volume / 100) * 128);
+                    Module._setVolume(sdlVolume);
+                }
+            }
+            
+            if (savedMuted) {
+                muteButton.classList.add('muted');
+                muteIcon.textContent = '🔇';
+                muteText.textContent = 'Unmute';
+                
+                // Applica il mute se il modulo è caricato
+                if (typeof Module !== 'undefined' && Module._muteAudio) {
+                    Module._muteAudio(true);
+                }
+            }
+            
+            // Previeni propagazione eventi touch sui controlli audio
+            const audioControlsContainer = document.querySelector('.audio-controls');
+            if (audioControlsContainer) {
+                audioControlsContainer.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                });
+                audioControlsContainer.addEventListener('touchend', function(e) {
+                    e.stopPropagation();
+                });
+                audioControlsContainer.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                });
+                audioControlsContainer.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            // Event listener per il slider del volume
+            volumeSlider.addEventListener('input', function(e) {
+                e.stopPropagation();
+                const volume = parseInt(this.value); // Valore 0-100
+                volumeValue.textContent = volume;
+                
+                // Converti il volume da 0-100 a 0-128 per SDL
+                const sdlVolume = Math.round((volume / 100) * 128);
+                
+                // Applica il volume al gioco
+                if (typeof Module !== 'undefined' && Module._setVolume) {
+                    try {
+                        Module._setVolume(sdlVolume);
+                        localStorage.setItem('tetris-volume', volume.toString()); // Salva il valore 0-100
+                        console.log('🔊 Volume set to:', volume + '% (SDL: ' + sdlVolume + ')');
+                    } catch (e) {
+                        console.error('Error setting volume:', e);
+                    }
+                }
+                
+                // Se il volume è > 0 e l'audio era mutato, togli il mute
+                if (volume > 0 && muteButton.classList.contains('muted')) {
+                    muteButton.classList.remove('muted');
+                    muteIcon.textContent = '🔊';
+                    muteText.textContent = 'Mute';
+                    
+                    if (typeof Module !== 'undefined' && Module._muteAudio) {
+                        Module._muteAudio(false);
+                        localStorage.setItem('tetris-muted', 'false');
+                    }
+                }
+            });
+            
+            // Previeni eventi touch specifici per il volume slider
+            volumeSlider.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+            volumeSlider.addEventListener('touchend', function(e) {
+                e.stopPropagation();
+            });
+            volumeSlider.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Event listener per il pulsante mute
+            muteButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isMuted = this.classList.contains('muted');
+                
+                if (isMuted) {
+                    // Unmute
+                    this.classList.remove('muted');
+                    muteIcon.textContent = '🔊';
+                    muteText.textContent = 'Mute';
+                    
+                    if (typeof Module !== 'undefined' && Module._muteAudio) {
+                        try {
+                            Module._muteAudio(false);
+                            localStorage.setItem('tetris-muted', 'false');
+                            console.log('🔊 Audio unmuted');
+                        } catch (e) {
+                            console.error('Error unmuting audio:', e);
+                        }
+                    }
+                } else {
+                    // Mute
+                    this.classList.add('muted');
+                    muteIcon.textContent = '🔇';
+                    muteText.textContent = 'Unmute';
+                    
+                    if (typeof Module !== 'undefined' && Module._muteAudio) {
+                        try {
+                            Module._muteAudio(true);
+                            localStorage.setItem('tetris-muted', 'true');
+                            console.log('🔇 Audio muted');
+                        } catch (e) {
+                            console.error('Error muting audio:', e);
+                        }
+                    }
+                }
+            });
+            
+            audioInitialized = true;
+            console.log('🔊 Audio controls initialized successfully');
+        }
+        
+        // Inizializza i controlli audio quando il DOM è pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initAudioControls, 1000);
+        });
+        
+        // Riprova l'inizializzazione quando il modulo Emscripten è caricato
+        window.addEventListener('load', function() {
+            setTimeout(initAudioControls, 2000);
+        });
 
         
     </script>
