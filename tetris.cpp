@@ -35,6 +35,10 @@ constexpr int GRID_OFFSET_Y = 0;           // Grid vertical offset / Offset vert
 constexpr int GRID_HEIGHT = 20;            // Number of blocks vertically / Numero blocchi verticali
 constexpr int WINDOW_HEIGHT = GRID_HEIGHT * BLOCK_SIZE; // Window height / Altezza finestra
 
+// Pause toggle cooldown to prevent rapid repeated toggles (in ms)
+static Uint32 last_pause_toggle_ms = 0;
+static const Uint32 PAUSE_TOGGLE_COOLDOWN_MS = 250;
+
 // SDL Color wrapper class / Classe wrapper per colori SDL
 class Color {
 public:
@@ -411,8 +415,13 @@ public:
     void handleInput(const SDL_Event& event) {
         if (event.type == SDL_KEYDOWN) {
             if (!game_over) {  // If game is still running / Se il gioco è ancora in corso
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                if (event.key.keysym.sym == SDLK_ESCAPE && event.key.repeat == 0) {
+                    // Toggle pause only on initial keydown (ignore auto-repeat) with cooldown
+                    Uint32 now = SDL_GetTicks();
+                    if (now - last_pause_toggle_ms >= PAUSE_TOGGLE_COOLDOWN_MS) {
+                        pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                        last_pause_toggle_ms = now;
+                    }
                 }
                 
                 if (!pause_game) {  // Only process input if not paused / Processa input solo se non in pausa

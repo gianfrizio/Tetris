@@ -35,6 +35,10 @@
 static bool gameStartRequested = false;
 static bool gameInitialized = false;
 
+// Pause toggle cooldown to prevent rapid repeated toggles (in ms)
+static Uint32 last_pause_toggle_ms = 0;
+static const Uint32 PAUSE_TOGGLE_COOLDOWN_MS = 250;
+
 // Game constants / Costanti di gioco
 constexpr int WINDOW_WIDTH = 400;          // Window width in pixels / Larghezza finestra in pixel
 constexpr int GRID_WIDTH = 10;             // Number of blocks horizontally / Numero blocchi orizzontali
@@ -456,9 +460,16 @@ public:
             }
             
             if (!game_over) {  // If game is still running / Se il gioco è ancora in corso
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    pause_game = !pause_game;  // Toggle pause / Commuta pausa
-                    std::cout << "ESC pressed - Pause state: " << (pause_game ? "PAUSED" : "PLAYING") << std::endl;
+                if (event.key.keysym.sym == SDLK_ESCAPE && event.key.repeat == 0) {
+                    // Toggle pause only on initial keydown (ignore auto-repeat)
+                    Uint32 now = SDL_GetTicks();
+                    if (now - last_pause_toggle_ms >= PAUSE_TOGGLE_COOLDOWN_MS) {
+                        pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                        last_pause_toggle_ms = now;
+                        std::cout << "ESC pressed - Pause state: " << (pause_game ? "PAUSED" : "PLAYING") << std::endl;
+                    } else {
+                        // Ignoring rapid toggle
+                    }
                 }
                 
                 if (!pause_game) {  // Only process input if not paused / Processa input solo se non in pausa

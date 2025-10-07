@@ -208,6 +208,10 @@ int score = 0;                  // Current score / Punteggio attuale
 int level = 1;                  // Current level / Livello attuale
 int lines_cleared_total = 0;    // Total lines cleared / Totale linee eliminate
 
+// Cooldown for pause toggle (milliseconds)
+static Uint32 last_pause_toggle_ms = 0;
+static const Uint32 PAUSE_TOGGLE_COOLDOWN_MS = 250;
+
 // Initialize SDL systems (video, audio, fonts) / Inizializza sistemi SDL (video, audio, font)
 bool init_SDL() {
     // Initialize SDL video and audio subsystems / Inizializza sottosistemi video e audio SDL
@@ -501,8 +505,13 @@ int main(int argc __attribute__((unused)), char *argv[] __attribute__((unused)))
                 running = false;
             } else if (e.type == SDL_KEYDOWN) {
                 if (!game_over) {  // If game is still running / Se il gioco è ancora in corso
-                    if (e.key.keysym.sym == SDLK_ESCAPE) {
-                        pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                    if (e.key.keysym.sym == SDLK_ESCAPE && e.key.repeat == 0) {
+                        // Toggle pause only on initial keydown (ignore auto-repeat) with cooldown
+                        Uint32 now = SDL_GetTicks();
+                        if (now - last_pause_toggle_ms >= PAUSE_TOGGLE_COOLDOWN_MS) {
+                            pause_game = !pause_game;  // Toggle pause / Commuta pausa
+                            last_pause_toggle_ms = now;
+                        }
                     }
                     if (!pause_game) {  // Only process input if not paused / Processa input solo se non in pausa
                         if (e.key.keysym.sym == SDLK_LEFT) {  // Move left / Muovi a sinistra

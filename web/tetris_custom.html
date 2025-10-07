@@ -1912,8 +1912,34 @@
         };
         
         // Event listener per la tastiera
+    // Small cooldown to avoid rapid pause toggles (ms)
+    const PAUSE_TOGGLE_COOLDOWN_MS = 250;
+    let lastPauseToggleMs = 0;
+
         document.addEventListener('keydown', function(event) {
-            console.log('Key pressed:', event.key, event.code);
+            console.log('Key pressed:', event.key, event.code, 'isTrusted=', event.isTrusted);
+
+            // Ignore synthetic (programmatically-dispatched) keyboard events so
+            // simulateKeyPress() (which dispatches events to the canvas) doesn't
+            // bubble up and trigger the JS handlers again, causing double toggles.
+            if (!event.isTrusted) {
+                console.log('Ignoring synthetic key event:', event.key);
+                return;
+            }
+
+            // Also ignore events whose target is the canvas element. Simulated
+            // key events are dispatched directly to the canvas and should be
+            // handled by the C++ engine (via Emscripten). If they bubble up to
+            // document we must not handle them again in JS.
+            try {
+                const canvasEl = (typeof Module !== 'undefined' && Module.canvas) ? Module.canvas : document.getElementById('canvas');
+                if (canvasEl && event.target === canvasEl) {
+                    console.log('Ignoring key event targeted at canvas:', event.key);
+                    return;
+                }
+            } catch (e) {
+                // ignore lookup errors
+            }
             
             // INVIO - riavvia tutto FORZATAMENTE
             if (event.key === 'Enter' || event.code === 'Enter') {
@@ -1944,6 +1970,13 @@
                 
                 // ESC da tastiera fisica - gestisci normalmente
                 if (!isGameOver) {
+                    const now = Date.now();
+                    if (now - lastPauseToggleMs < PAUSE_TOGGLE_COOLDOWN_MS) {
+                        console.log('Ignorato ESC rapido (cooldown)');
+                        return;
+                    }
+                    lastPauseToggleMs = now;
+
                     if (isPaused) {
                         console.log('FORCING resume da tastiera');
                         forceResume();
@@ -2301,18 +2334,35 @@
             console.log('Canvas fitted:', { isMobile, viewportWidth, viewportHeight });
         }
         
-    // Touch controls for mobile devices
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let lastTapTime = 0;
-    const TAP_DEBOUNCE = 250; // ms
-    const TAP_HOLD_TIME = 300; // ms max for a tap
-    const LONG_PRESS_TIME = 2000; // ms for long press (2 seconds)
-    let longPressTimer = null;
-    let longPressTriggered = false;
-    let touchMoved = false;
-    let mobilePauseActive = false; // Track mobile pause state
+    /*
+     Mobile touch controls and long-press handling
+
+     Changes added: prevent the pause menu from opening on rapid consecutive taps.
+     - Implements a true long-press detection (LONG_PRESS_TIME)
+     - Suppresses long-press if user performed a burst of quick taps (recentTapCount)
+     - Adds a short cooldown after a successful long-press to avoid immediate re-triggering
+     These guards prevent accidental pause menu openings on mobile when users tap
+     quickly multiple times. Adjust LONG_PRESS_TIME, TAP_BURST_THRESHOLD and
+     LONG_PRESS_COOLDOWN to tune behavior.
+    */
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let lastTapTime = 0;
+        const TAP_DEBOUNCE = 250; // ms
+        const TAP_HOLD_TIME = 300; // ms max for a tap
+        const LONG_PRESS_TIME = 2000; // ms for long press (2 seconds)
+        let longPressTimer = null;
+        let longPressTriggered = false;
+        let touchMoved = false;
+        let mobilePauseActive = false; // Track mobile pause state
+        // Anti-accidental-open guards
+        let recentTapCount = 0;           // number of quick taps in a short burst
+        let tapBurstResetTimer = null;   // timer to reset recentTapCount
+        const TAP_BURST_WINDOW = 700;    // ms window to consider taps part of a burst
+        const TAP_BURST_THRESHOLD = 3;   // if >=this in window, suppress long-press briefly
+        let lastLongPressTime = 0;       // timestamp of last successful long-press
+        const LONG_PRESS_COOLDOWN = 1200; // ms cooldown after a long-press
     // Track whether a touch started on the canvas so body fallback ignores it
     let canvasTouchActive = false;
         // Throttle for lateral moves to prevent multiple rapid moves from a single swipe
@@ -2356,14 +2406,37 @@
                 touchMoved = false;
                 
                 // Start long press timer only if touch stays still
+                // Reset any previous long press timer for safety
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
                 longPressTimer = setTimeout(() => {
-                    // Double check: only trigger if no movement occurred AND timer wasn't cancelled
-                    if (!touchMoved && longPressTimer !== null && canvasTouchActive) {
+                    // Double check: only trigger if no movement occurred, timer wasn't cancelled,
+                    // the touch actually lasted LONG_PRESS_TIME, and we're not in a recent tap burst.
+                    const now = Date.now();
+                    const actualTouchDuration = now - touchStartTime;
+
+                    // Suppress if a long-press was triggered very recently
+                    if (now - lastLongPressTime < LONG_PRESS_COOLDOWN) {
+                        console.log('🚫 Ignoring long press due to cooldown');
+                        return;
+                    }
+
+                    // If quick tap burst detected, don't allow accidental long-presses
+                    if (recentTapCount >= TAP_BURST_THRESHOLD) {
+                        console.log('🚫 Suppressing long press due to recent tap burst:', recentTapCount);
+                        return;
+                    }
+
+                    // Finally ensure movement didn't occur and duration is sufficient
+                    if (!touchMoved && longPressTimer !== null && canvasTouchActive && actualTouchDuration >= LONG_PRESS_TIME) {
                         longPressTriggered = true;
-                        console.log('✅ Long press activated - conditions met');
+                        lastLongPressTime = now;
+                        console.log('✅ Long press activated - conditions met (duration:', actualTouchDuration + 'ms)');
                         showMobilePauseMenu();
                     } else {
-                        console.log('❌ Long press cancelled - movement detected or touch ended');
+                        console.log('❌ Long press cancelled - movement detected, too short, or timer cleared', { touchMoved, actualTouchDuration });
                     }
                 }, LONG_PRESS_TIME);
             }, { passive: false });
@@ -2393,7 +2466,7 @@
                 if (e.changedTouches.length > 1) return; // ignore multi-touch
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // If long press was already triggered, don't cancel it
                 if (longPressTriggered) {
                     console.log('✅ Long press was triggered, keeping it active');
@@ -2402,7 +2475,7 @@
                     longPressTriggered = false; // Reset for next touch
                     return;
                 }
-                
+
                 // Only clear timer if long press wasn't triggered
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
@@ -2411,16 +2484,29 @@
                     console.log('🚫 Long press timer cancelled - touch too short:', touchDuration + 'ms');
                 }
 
+                // Compute touch end coordinates first (fix TDZ ReferenceError)
+                const touch = e.changedTouches[0];
+                const touchEndX = touch.clientX;
+                const touchEndY = touch.clientY;
+                const touchEndTime = Date.now();
+
+                // If this was a short tap (not a swipe), account it in recentTapCount so
+                // a burst of quick taps doesn't accidentally allow a long-press immediately after.
+                if (Math.abs(touchEndX - touchStartX) < 20 && Math.abs(touchEndY - touchStartY) < 20 && (touchEndTime - touchStartTime) < TAP_HOLD_TIME) {
+                    recentTapCount++;
+                    if (tapBurstResetTimer) clearTimeout(tapBurstResetTimer);
+                    tapBurstResetTimer = setTimeout(() => {
+                        recentTapCount = 0;
+                        tapBurstResetTimer = null;
+                    }, TAP_BURST_WINDOW);
+                    console.log('🔔 Registered quick tap, burst count:', recentTapCount);
+                }
+
                 if (!gameStartRequested) {
                     canvasTouchActive = false;
                     touchMoved = false; // Reset for next touch
                     return;
                 }
-
-                const touch = e.changedTouches[0];
-                const touchEndX = touch.clientX;
-                const touchEndY = touch.clientY;
-                const touchEndTime = Date.now();
 
                 const deltaX = touchEndX - touchStartX;
                 const deltaY = touchEndY - touchStartY;
@@ -2475,6 +2561,17 @@
             if (!targetCanvas) return;
 
             const keyCode = getKeyCode(key) || 0;
+
+            // Prevent dispatching the same simulated key too frequently
+            if (!simulateKeyPress._lastDispatch) simulateKeyPress._lastDispatch = {};
+            const last = simulateKeyPress._lastDispatch[key] || 0;
+            const now = Date.now();
+            const SIMULATE_KEY_COOLDOWN_MS = 120; // small cooldown for simulated keys
+            if (now - last < SIMULATE_KEY_COOLDOWN_MS) {
+                console.log('Skipping simulated key (cooldown):', key);
+                return;
+            }
+            simulateKeyPress._lastDispatch[key] = now;
 
             try {
                 // Ensure the canvas has focus so SDL receives keyboard events
