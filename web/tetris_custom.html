@@ -932,6 +932,212 @@
             }
         }
 
+        /* Desktop Pause Menu */
+        .desktop-pause-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .desktop-pause-content {
+            background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(26, 26, 64, 0.95));
+            backdrop-filter: blur(15px);
+            border: 3px solid #64ffda;
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            min-width: 400px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(100, 255, 218, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .desktop-pause-content::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #64ffda, #2196f3, #9c27b0, #64ffda);
+            border-radius: 27px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            background-size: 300% 300%;
+        }
+        
+        .desktop-pause-menu.active {
+            display: flex;
+            animation: fadeInScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .desktop-pause-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .desktop-pause-subtitle {
+            color: #b0bec5;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .desktop-pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+        
+        .desktop-pause-btn {
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            border: none;
+            padding: 1rem 2rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f0f23;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 8px 25px rgba(100, 255, 218, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+        }
+        
+        .desktop-pause-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .desktop-pause-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 12px 35px rgba(100, 255, 218, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .desktop-pause-btn:hover::before {
+            left: 100%;
+        }
+        
+        .desktop-pause-btn:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+        
+        .desktop-pause-btn.secondary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            color: #64ffda;
+            border: 2px solid #64ffda;
+            box-shadow: 
+                0 8px 25px rgba(100, 255, 218, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .desktop-pause-btn.secondary:hover {
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.2), rgba(100, 255, 218, 0.1));
+            color: #ffffff;
+            box-shadow: 
+                0 12px 35px rgba(100, 255, 218, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .desktop-pause-btn.danger {
+            background: linear-gradient(135deg, #ff5722, #e64a19);
+            color: #ffffff;
+        }
+        
+        .desktop-pause-btn.danger:hover {
+            background: linear-gradient(135deg, #ff6f47, #ff5722);
+            box-shadow: 
+                0 12px 35px rgba(255, 87, 34, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .desktop-pause-stats {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .desktop-pause-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+        
+        .desktop-pause-stats-label {
+            color: #b0bec5;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .desktop-pause-stats-value {
+            color: #64ffda;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* Desktop only - hide on mobile */
+        @media (max-width: 768px) {
+            .desktop-pause-menu {
+                display: none !important;
+            }
+        }
+
         /* Nascondi elementi Emscripten originali */
         #emscripten_logo,
         #spinner,
@@ -987,15 +1193,6 @@
         </div>
     </div>
 
-    <!-- Mobile Game Over Overlay -->
-    <div class="mobile-gameover-overlay" id="mobileGameOverOverlay">
-        <div class="mobile-gameover-content">
-            <div class="mobile-gameover-title">GAME OVER</div>
-            <div class="mobile-gameover-score" id="mobileGameOverScore">Punteggio: 0</div>
-            <div class="mobile-gameover-instruction">👆 Tap per riavviare</div>
-        </div>
-    </div>
-
     <!-- Mobile Pause Menu -->
     <div class="mobile-pause-menu" id="mobilePauseMenu">
         <div class="mobile-pause-content">
@@ -1003,6 +1200,54 @@
             <div class="mobile-pause-buttons">
                 <button class="mobile-btn" id="resumeGameBtn">▶️ Riprendi</button>
                 <button class="mobile-btn" id="restartGameBtn">🔄 Ricomincia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Pause Menu -->
+    <div class="desktop-pause-menu" id="desktopPauseMenu">
+        <div class="desktop-pause-content">
+            <div class="desktop-pause-title">
+                ⏸️ GIOCO IN PAUSA
+            </div>
+            <div class="desktop-pause-subtitle">
+                Pronto a continuare la sfida?
+            </div>
+            
+            <!-- Statistiche attuali -->
+            <div class="desktop-pause-stats">
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Punteggio</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseScore">0</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Livello</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseLevel">1</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Linee</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseLines">0</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Tempo</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseTime">00:00</span>
+                </div>
+            </div>
+            
+            <div class="desktop-pause-buttons">
+                <button class="desktop-pause-btn" id="desktopResumeBtn">
+                    ▶️ Riprendi Gioco
+                </button>
+                <button class="desktop-pause-btn secondary" id="desktopRestartBtn">
+                    🔄 Ricomincia
+                </button>
+                <button class="desktop-pause-btn danger" id="desktopQuitBtn">
+                    🚪 Esci
+                </button>
+            </div>
+            
+            <div style="margin-top: 1.5rem; color: #78909c; font-size: 0.9rem;">
+                Premi <strong>ESC</strong> per riprendere velocemente
             </div>
         </div>
     </div>
@@ -1794,8 +2039,8 @@
             console.log('✅ RESTART COMPLETED - Timer is running, C++ hopefully restarted');
         }
         
-        function forcePause() {
-            console.log('💥 FORCING PAUSE');
+        function forcePause(reason = 'manual') {
+            console.log('💥 FORCING PAUSE (' + reason + ')');
             
             if (!isPaused && !isGameOver) {
                 isPaused = true;
@@ -1805,16 +2050,21 @@
                 // AGGIORNA DISPLAY SUBITO
                 const gameStateElement = document.getElementById('gameState');
                 if (gameStateElement) {
-                    gameStateElement.textContent = 'In pausa';
-                    gameStateElement.style.color = '#ffa726';
+                    if (reason === 'background' || reason === 'auto') {
+                        gameStateElement.textContent = 'Auto-pausa';
+                        gameStateElement.style.color = '#ff9800';
+                    } else {
+                        gameStateElement.textContent = 'In pausa';
+                        gameStateElement.style.color = '#ffa726';
+                    }
                 }
                 
-                console.log('✅ PAUSE FORCED - Timer stopped');
+                console.log('✅ PAUSE FORCED - Timer stopped (' + reason + ')');
             }
         }
         
-        function forceResume() {
-            console.log('💥 FORCING RESUME');
+        function forceResume(reason = 'manual') {
+            console.log('💥 FORCING RESUME (' + reason + ')');
             
             if (isPaused && !isGameOver) {
                 if (pauseStartTime) {
@@ -1827,6 +2077,12 @@
                 isTimerRunning = true;  // RIPRENDI IL TIMER SUBITO
                 pauseStartTime = null;
                 
+                // Reset auto-pause state when resuming
+                if (reason === 'auto' || reason === 'background') {
+                    wasAutoPaused = false;
+                    autoPauseReason = '';
+                }
+                
                 // AGGIORNA DISPLAY SUBITO
                 const gameStateElement = document.getElementById('gameState');
                 if (gameStateElement) {
@@ -1834,7 +2090,7 @@
                     gameStateElement.style.color = '';
                 }
                 
-                console.log('✅ RESUME FORCED - Timer running');
+                console.log('✅ RESUME FORCED - Timer running (' + reason + ')');
             }
         }
         
@@ -1895,6 +2151,10 @@
             console.log('  isPaused:', isPaused);
             console.log('  isGameOver:', isGameOver);
             console.log('  gameStartTimeReal:', gameStartTimeReal);
+            console.log('  wasAutoPaused:', wasAutoPaused);
+            console.log('  autoPauseReason:', autoPauseReason);
+            console.log('  document.hidden:', document.hidden);
+            console.log('  document.visibilityState:', document.visibilityState);
             
             if (typeof Module !== 'undefined') {
                 console.log('C++ state:');
@@ -1911,13 +2171,125 @@
             console.log('========================');
         };
         
+        // Debug functions for testing auto-pause
+        window.testAutoPause = function() {
+            console.log('🧪 Testing auto-pause...');
+            if (!isPaused && !isGameOver && gameStartRequested) {
+                wasAutoPaused = true;
+                autoPauseReason = 'test';
+                forcePause('test');
+                console.log('✅ Auto-pause test activated - game should be paused');
+            } else {
+                console.log('❌ Cannot test auto-pause - game not running or already paused');
+            }
+        };
+        
+        window.testAutoResume = function() {
+            console.log('🧪 Testing auto-resume...');
+            if (wasAutoPaused) {
+                showResumeDialog();
+                console.log('✅ Resume dialog should appear');
+            } else {
+                console.log('❌ Cannot test auto-resume - game was not auto-paused');
+            }
+        };
+        
+        // Debug helper to simulate background/foreground
+        window.simulateBackground = function() {
+            console.log('🧪 Simulating background...');
+            // Manually trigger the visibility change handler
+            Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+            document.dispatchEvent(new Event('visibilitychange'));
+        };
+        
+        window.simulateForeground = function() {
+            console.log('🧪 Simulating foreground...');
+            Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+            document.dispatchEvent(new Event('visibilitychange'));
+        };
+        
+        // Debug functions for desktop pause menu
+        window.showDesktopMenu = function() {
+            console.log('🧪 Showing desktop pause menu...');
+            showDesktopPauseMenu();
+        };
+        
+        window.hideDesktopMenu = function() {
+            console.log('🧪 Hiding desktop pause menu...');
+            hideDesktopPauseMenu();
+        };
+        
+        // Function to check if JS and C++ states are synchronized
+        window.checkSyncState = function() {
+            if (typeof Module === 'undefined') {
+                console.log('❌ Module not available - cannot check sync');
+                return false;
+            }
+            
+            try {
+                const cppRunning = Module._isGameRunning ? Module._isGameRunning() : true;
+                const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                
+                console.log('=== SYNC STATE CHECK ===');
+                console.log('JavaScript state:');
+                console.log('  isPaused:', isPaused);
+                console.log('  isGameOver:', isGameOver);
+                console.log('  isTimerRunning:', isTimerRunning);
+                console.log('C++ state:');
+                console.log('  isGameRunning:', cppRunning);
+                console.log('  isGamePaused:', cppPaused);
+                
+                const jsExpectsPaused = isPaused || isGameOver;
+                const cppIsPaused = cppPaused || !cppRunning;
+                const inSync = jsExpectsPaused === cppIsPaused;
+                
+                console.log('Synchronization:', inSync ? '✅ IN SYNC' : '❌ OUT OF SYNC');
+                console.log('=======================');
+                
+                return inSync;
+            } catch(e) {
+                console.log('Error checking sync state:', e);
+                return false;
+            }
+        };
+        
+        // Function to force synchronization
+        window.forceSyncState = function() {
+            console.log('🔄 Forcing state synchronization...');
+            
+            if (!checkSyncState()) {
+                console.log('⚠️ States out of sync - attempting to fix...');
+                
+                try {
+                    if (typeof Module !== 'undefined') {
+                        const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                        
+                        if (isPaused && !cppPaused) {
+                            console.log('JS paused but C++ running - pausing C++');
+                            simulateKeyPress('Escape', { skipFocus: true });
+                        } else if (!isPaused && cppPaused) {
+                            console.log('JS running but C++ paused - resuming C++');
+                            simulateKeyPress('Escape', { restoreFocus: true });
+                        }
+                    }
+                } catch(e) {
+                    console.log('Error during sync:', e);
+                }
+                
+                // Recheck after sync attempt
+                setTimeout(() => {
+                    checkSyncState();
+                }, 200);
+            }
+        };
+        
         // Event listener per la tastiera
     // Small cooldown to avoid rapid pause toggles (ms)
     const PAUSE_TOGGLE_COOLDOWN_MS = 250;
     let lastPauseToggleMs = 0;
 
         document.addEventListener('keydown', function(event) {
-            console.log('Key pressed:', event.key, event.code, 'isTrusted=', event.isTrusted);
+            console.log('Key pressed:', event.key, event.code, 'isTrusted=', event.isTrusted, 'target=', event.target.tagName, event.target.id);
 
             // Ignore synthetic (programmatically-dispatched) keyboard events so
             // simulateKeyPress() (which dispatches events to the canvas) doesn't
@@ -1927,18 +2299,24 @@
                 return;
             }
 
-            // Also ignore events whose target is the canvas element. Simulated
+            // For ESC key, we want to handle it even if canvas has focus
+            // to ensure menu system works properly
+            const isEscKey = event.key === 'Escape' || event.code === 'Escape';
+            
+            // Also ignore events whose target is the canvas element, EXCEPT for ESC
             // key events are dispatched directly to the canvas and should be
             // handled by the C++ engine (via Emscripten). If they bubble up to
             // document we must not handle them again in JS.
-            try {
-                const canvasEl = (typeof Module !== 'undefined' && Module.canvas) ? Module.canvas : document.getElementById('canvas');
-                if (canvasEl && event.target === canvasEl) {
-                    console.log('Ignoring key event targeted at canvas:', event.key);
-                    return;
+            if (!isEscKey) {
+                try {
+                    const canvasEl = (typeof Module !== 'undefined' && Module.canvas) ? Module.canvas : document.getElementById('canvas');
+                    if (canvasEl && event.target === canvasEl) {
+                        console.log('Ignoring non-ESC key event targeted at canvas:', event.key);
+                        return;
+                    }
+                } catch (e) {
+                    // ignore lookup errors
                 }
-            } catch (e) {
-                // ignore lookup errors
             }
             
             // INVIO - riavvia tutto FORZATAMENTE
@@ -1955,10 +2333,19 @@
                 console.log('ESC pressed - checking conditions');
                 event.preventDefault();
                 
-                // Se il menu mobile è già visibile, questo ESC è per il C++, non fare altro JavaScript
+                // Check if any pause menu is already visible
                 const mobilePauseMenu = document.getElementById('mobilePauseMenu');
+                const desktopPauseMenu = document.getElementById('desktopPauseMenu');
+                
                 if (mobilePauseMenu && mobilePauseMenu.classList.contains('active')) {
-                    console.log('📱 Mobile menu visibile - ESC per C++, nessuna azione JS');
+                    console.log('📱 Mobile menu visibile - chiudendo menu');
+                    hideMobilePauseMenu();
+                    return;
+                }
+                
+                if (desktopPauseMenu && desktopPauseMenu.classList.contains('active')) {
+                    console.log('🖥️ Desktop menu visibile - chiudendo menu');
+                    hideDesktopPauseMenu();
                     return;
                 }
                 
@@ -1979,10 +2366,46 @@
 
                     if (isPaused) {
                         console.log('FORCING resume da tastiera');
-                        forceResume();
+                        forceResume('keyboard');
+                        
+                        // Also resume C++ game
+                        setTimeout(() => {
+                            try {
+                                if (typeof Module !== 'undefined' && Module._isGamePaused && Module._isGamePaused()) {
+                                    simulateKeyPress('Escape');
+                                }
+                            } catch(e) {
+                                console.log('Error resuming C++ game:', e);
+                            }
+                        }, 50);
+                        
                     } else {
                         console.log('FORCING pause da tastiera');
-                        forcePause();
+                        forcePause('keyboard');
+                        
+                        // Pause C++ game first, but be smarter about focus
+                        setTimeout(() => {
+                            try {
+                                if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGameRunning() && !Module._isGamePaused()) {
+                                    // Don't steal focus when pausing - we want to keep control for menu
+                                    simulateKeyPress('Escape', { skipFocus: true });
+                                    console.log('🎮 C++ game paused via keyboard');
+                                }
+                            } catch(e) {
+                                console.log('Error pausing C++ game:', e);
+                            }
+                        }, 50);
+                        
+                        // Show appropriate pause menu
+                        setTimeout(() => {
+                            if (window.innerWidth <= 768) {
+                                console.log('📱 Showing mobile pause menu');
+                                showMobilePauseMenu();
+                            } else {
+                                console.log('🖥️ Showing desktop pause menu');
+                                showDesktopPauseMenu();
+                            }
+                        }, 100);
                     }
                 }
             }
@@ -2100,10 +2523,26 @@
         console.log('  resumeTimer() - Riprende il timer');
         console.log('  forceGameOver() - Forza game over');
         console.log('  restartTimer() - Riavvia per nuovo gioco');
+        console.log('  checkGameState() - Mostra stato attuale');
+        console.log('\n⏸️ Auto-Pause Testing:');
+        console.log('  testAutoPause() - Testa pausa automatica');
+        console.log('  testAutoResume() - Testa resume automatico');
+        console.log('  simulateBackground() - Simula background');
+        console.log('  simulateForeground() - Simula foreground');
+        console.log('\n🖥️ Desktop Menu Testing:');
+        console.log('  showDesktopMenu() - Mostra menu desktop');
+        console.log('  hideDesktopMenu() - Nascondi menu desktop');
+        console.log('\n🔄 State Synchronization:');
+        console.log('  checkSyncState() - Verifica sincronizzazione JS/C++');
+        console.log('  forceSyncState() - Forza sincronizzazione stati');
         console.log('\n⌨️ Keyboard Controls:');
         console.log('  ESC - Pausa/Riprendi');
         console.log('  ENTER - Riavvia gioco');
         console.log('  Ctrl+G - Forza game over');
+        console.log('\n🔄 Auto-Pause Active: Il gioco si metterà automaticamente in pausa quando:');
+        console.log('  - Cambi tab nel browser');
+        console.log('  - Metti l\'app in background su mobile');
+        console.log('  - La finestra perde il focus');
         
         function updateStatsFromCanvasOrEvents() {
             // Usa le funzioni C++ esportate per ottenere le statistiche reali
@@ -2553,8 +2992,8 @@
             }, { passive: false });
         }
 
-        function simulateKeyPress(key) {
-            console.log('Simulating key press:', key);
+        function simulateKeyPress(key, options = {}) {
+            console.log('Simulating key press:', key, options);
 
             // Prefer dispatching to the canvas element used by Module
             const targetCanvas = (typeof Module !== 'undefined' && Module.canvas) ? Module.canvas : document.getElementById('canvas');
@@ -2573,9 +3012,14 @@
             }
             simulateKeyPress._lastDispatch[key] = now;
 
+            // Store current focus to restore later if needed
+            const currentFocus = document.activeElement;
+            const shouldRestoreFocus = options.restoreFocus !== false && currentFocus !== targetCanvas;
+
             try {
                 // Ensure the canvas has focus so SDL receives keyboard events
-                if (typeof targetCanvas.focus === 'function') {
+                // But only if not explicitly disabled
+                if (options.skipFocus !== true && typeof targetCanvas.focus === 'function') {
                     try { targetCanvas.focus({ preventScroll: true }); } catch(e) { targetCanvas.focus(); }
                 }
 
@@ -2613,6 +3057,21 @@
                         cancelable: true
                     });
                     targetCanvas.dispatchEvent(keyUpEvent);
+                    
+                    // Restore focus if requested and safe to do so
+                    if (shouldRestoreFocus && currentFocus && typeof currentFocus.focus === 'function') {
+                        try {
+                            // Wait a bit more to ensure C++ has processed the key
+                            setTimeout(() => {
+                                if (document.body.contains(currentFocus)) {
+                                    currentFocus.focus({ preventScroll: true });
+                                    console.log('Focus restored to:', currentFocus.tagName, currentFocus.id);
+                                }
+                            }, 50);
+                        } catch(e) {
+                            console.log('Could not restore focus:', e);
+                        }
+                    }
                 }, KEY_HOLD_MS);
             } catch (e) {
                 console.error('simulateKeyPress error:', e);
@@ -2731,6 +3190,152 @@
             setTimeout(fitCanvasToViewport, 100); // delay for orientation to complete
         });
         
+        // Auto-pause system when game goes to background (mobile and desktop)
+        let wasAutoPaused = false;
+        let autoPauseReason = '';
+        
+        // Primary method: Page Visibility API (works on all modern browsers)
+        document.addEventListener('visibilitychange', function() {
+            if (!gameStartRequested || isGameOver) return;
+            
+            if (document.hidden && !isPaused) {
+                // Page is hidden (tab switch, app background, etc.)
+                console.log('🔄 Auto-pausing: page went to background');
+                wasAutoPaused = true;
+                autoPauseReason = 'background';
+                forcePause('background');
+                
+                // Also pause the C++ game engine
+                try {
+                    if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGameRunning() && !Module._isGamePaused()) {
+                        simulateKeyPress('Escape');
+                        console.log('🎮 C++ game also paused for background');
+                    }
+                } catch(e) {
+                    console.log('Error pausing C++ game:', e);
+                }
+            } else if (!document.hidden && wasAutoPaused && autoPauseReason === 'background') {
+                // Page is visible again
+                console.log('👀 Page back to foreground - showing resume options');
+                showResumeDialog();
+            }
+        });
+        
+        // Secondary method: Window focus/blur (backup for older browsers)
+        window.addEventListener('blur', function() {
+            if (!gameStartRequested || isGameOver || document.hidden) return; // visibilitychange already handled it
+            
+            if (!isPaused) {
+                console.log('🔄 Auto-pausing: window lost focus');
+                wasAutoPaused = true;
+                autoPauseReason = 'blur';
+                forcePause('auto');
+                
+                try {
+                    if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGameRunning() && !Module._isGamePaused()) {
+                        simulateKeyPress('Escape');
+                        console.log('🎮 C++ game also paused for focus loss');
+                    }
+                } catch(e) {
+                    console.log('Error pausing C++ game:', e);
+                }
+            }
+        });
+        
+        window.addEventListener('focus', function() {
+            if (!gameStartRequested || isGameOver) return;
+            
+            if (wasAutoPaused && autoPauseReason === 'blur' && !document.hidden) {
+                console.log('👀 Window regained focus - showing resume options');
+                showResumeDialog();
+            }
+        });
+        
+        // Function to show resume dialog/notification
+        function showResumeDialog() {
+            // Reset auto-pause state
+            wasAutoPaused = false;
+            autoPauseReason = '';
+            
+            // On mobile, show the pause menu
+            if (window.innerWidth <= 768) {
+                console.log('📱 Mobile: showing pause menu for resume');
+                const mobilePauseMenu = document.getElementById('mobilePauseMenu');
+                if (mobilePauseMenu) {
+                    mobilePauseMenu.classList.add('active');
+                    mobilePauseActive = true;
+                }
+            } else {
+                // On desktop, show the pause menu
+                console.log('🖥️ Desktop: showing pause menu for resume');
+                showDesktopPauseMenu();
+            }
+        }
+        
+        // Desktop pause menu functions
+        function showDesktopPauseMenu() {
+            const menu = document.getElementById('desktopPauseMenu');
+            if (menu && window.innerWidth > 768) {
+                // Update stats in the menu
+                updateDesktopPauseMenuStats();
+                
+                // Show menu
+                menu.classList.add('active');
+                console.log('🖥️ Desktop pause menu shown');
+                
+                // Focus the resume button for keyboard accessibility
+                setTimeout(() => {
+                    const resumeBtn = document.getElementById('desktopResumeBtn');
+                    if (resumeBtn) resumeBtn.focus();
+                }, 100);
+            }
+        }
+        
+        function hideDesktopPauseMenu() {
+            const menu = document.getElementById('desktopPauseMenu');
+            if (menu) {
+                menu.classList.remove('active');
+                console.log('🖥️ Desktop pause menu hidden');
+            }
+        }
+        
+        function updateDesktopPauseMenuStats() {
+            try {
+                // Update current game stats in the pause menu
+                const scoreEl = document.getElementById('desktopPauseScore');
+                const levelEl = document.getElementById('desktopPauseLevel');
+                const linesEl = document.getElementById('desktopPauseLines');
+                const timeEl = document.getElementById('desktopPauseTime');
+                
+                if (typeof Module !== 'undefined') {
+                    if (scoreEl && Module._getScore) {
+                        scoreEl.textContent = Module._getScore().toLocaleString();
+                    }
+                    if (levelEl && Module._getLevel) {
+                        levelEl.textContent = Module._getLevel();
+                    }
+                    if (linesEl && Module._getLines) {
+                        linesEl.textContent = Module._getLines();
+                    }
+                }
+                
+                // Update time from the game timer
+                if (timeEl) {
+                    const gameTimeElement = document.getElementById('gameTime');
+                    if (gameTimeElement) {
+                        timeEl.textContent = gameTimeElement.textContent.replace(' (PAUSA)', '').replace(' (FINAL)', '');
+                    }
+                }
+            } catch(e) {
+                console.log('Error updating pause menu stats:', e);
+            }
+        }
+        
+        // Replace the old notification function
+        function showDesktopResumeNotification() {
+            showDesktopPauseMenu();
+        }
+        
         // Mobile game over detection and overlay
         let mobileGameOverActive = false;
         
@@ -2791,8 +3396,23 @@
         let lastKnownScore = 0;
         let gameOverCheckInterval;
         
+        // Flag per evitare inizializzazioni multiple
+        let gameOverMonitoringInitialized = false;
+        
         function startGameOverMonitoring() {
-            if (gameOverCheckInterval) clearInterval(gameOverCheckInterval);
+            // Evita inizializzazioni multiple
+            if (gameOverMonitoringInitialized) {
+                console.log('🚫 Game over monitoring già inizializzato - ignoro');
+                return;
+            }
+            
+            if (gameOverCheckInterval) {
+                clearInterval(gameOverCheckInterval);
+                gameOverCheckInterval = null;
+            }
+            
+            gameOverMonitoringInitialized = true;
+            console.log('✅ Inizializzando game over monitoring (una sola volta)');
             
             gameOverCheckInterval = setInterval(() => {
                 if (typeof Module !== 'undefined' && Module._getScore && Module._isGameRunning) {
@@ -2832,75 +3452,14 @@
             }, 500); // Check every 500ms
         }
         
-        // Mobile game control buttons
+        // UNICO handler DOMContentLoaded consolidato per evitare inizializzazioni multiple
         document.addEventListener('DOMContentLoaded', () => {
             const pauseBtn = document.getElementById('mobilePauseBtn');
             const restartBtn = document.getElementById('mobileRestartBtn');
+            const resumeBtn = document.getElementById('resumeGameBtn');
+            const restartBtnMenu = document.getElementById('restartGameBtn');
             
-            if (pauseBtn) {
-                pauseBtn.addEventListener('click', () => {
-                    console.log('Mobile pause clicked');
-                    simulateKeyPress('Escape');
-                    
-                    // Toggle button text
-                    if (pauseBtn.textContent.includes('Pausa')) {
-                        pauseBtn.textContent = '▶️ Riprendi';
-                    } else {
-                        pauseBtn.textContent = '⏸️ Pausa';
-                    }
-                });
-            }
-            
-            if (restartBtn) {
-                restartBtn.addEventListener('click', () => {
-                    console.log('Mobile restart clicked');
-                    simulateKeyPress('Enter');
-                    
-                    // Reset pause button text
-                    if (pauseBtn) {
-                        pauseBtn.textContent = '⏸️ Pausa';
-                    }
-                });
-            }
-        });
-        
-        // Mobile game control buttons
-        document.addEventListener('DOMContentLoaded', () => {
-            const pauseBtn = document.getElementById('mobilePauseBtn');
-            const restartBtn = document.getElementById('mobileRestartBtn');
-            
-            if (pauseBtn) {
-                pauseBtn.addEventListener('click', () => {
-                    console.log('Mobile pause clicked');
-                    simulateKeyPress('Escape');
-                    
-                    // Toggle button text
-                    if (pauseBtn.textContent.includes('Pausa')) {
-                        pauseBtn.textContent = '▶️ Riprendi';
-                    } else {
-                        pauseBtn.textContent = '⏸️ Pausa';
-                    }
-                });
-            }
-            
-            if (restartBtn) {
-                restartBtn.addEventListener('click', () => {
-                    console.log('Mobile restart clicked');
-                    simulateKeyPress('Enter');
-                    
-                    // Reset pause button text
-                    if (pauseBtn) {
-                        pauseBtn.textContent = '⏸️ Pausa';
-                    }
-                });
-            }
-        });
-        
-        // Mobile game control buttons
-        document.addEventListener('DOMContentLoaded', () => {
-            const pauseBtn = document.getElementById('mobilePauseBtn');
-            const restartBtn = document.getElementById('mobileRestartBtn');
-            
+            // Mobile game control buttons
             if (pauseBtn) {
                 pauseBtn.addEventListener('click', () => {
                     console.log('Mobile pause clicked');
@@ -2927,10 +3486,186 @@
                 });
             }
             
-            // Start game over monitoring for mobile
+            // Mobile pause menu event listeners
+            if (resumeBtn) {
+                resumeBtn.addEventListener('click', () => {
+                    console.log('📱 Resume clicked');
+                    hideMobilePauseMenu();
+                    
+                    // Resume both JavaScript AND C++ game
+                    setTimeout(() => {
+                        if (isPaused) {
+                            console.log('📱 Resuming JavaScript state first');
+                            forceResume('mobile');
+                            
+                            // Now resume C++ game engine (only once!)
+                            setTimeout(() => {
+                                console.log('📱 Resuming C++ game engine');
+                                simulateKeyPress('Escape', { restoreFocus: true });
+                                
+                                // Ensure body has focus for future menu interactions
+                                setTimeout(() => {
+                                    document.body.focus();
+                                    console.log('🎯 Focus restored to body for mobile');
+                                }, 100);
+                            }, 50);
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Desktop pause menu event listeners
+            const desktopResumeBtn = document.getElementById('desktopResumeBtn');
+            const desktopRestartBtn = document.getElementById('desktopRestartBtn');
+            const desktopQuitBtn = document.getElementById('desktopQuitBtn');
+            
+            if (desktopResumeBtn) {
+                desktopResumeBtn.addEventListener('click', () => {
+                    console.log('🖥️ Desktop resume clicked');
+                    hideDesktopPauseMenu();
+                    
+                    setTimeout(() => {
+                        if (isPaused) {
+                            forceResume('desktop');
+                            
+                            setTimeout(() => {
+                                try {
+                                    if (typeof Module !== 'undefined' && Module._isGamePaused && Module._isGamePaused()) {
+                                        // Don't let canvas keep focus after resume
+                                        simulateKeyPress('Escape', { restoreFocus: true });
+                                        console.log('🎮 C++ game resumed from desktop menu');
+                                        
+                                        // Ensure document.body has focus for future ESC events
+                                        setTimeout(() => {
+                                            document.body.focus();
+                                            console.log('🎯 Focus restored to body for future menu access');
+                                        }, 100);
+                                    }
+                                } catch(e) {
+                                    console.log('Error resuming C++ game:', e);
+                                }
+                            }, 50);
+                        }
+                    }, 100);
+                });
+            }
+            
+            if (desktopRestartBtn) {
+                desktopRestartBtn.addEventListener('click', () => {
+                    console.log('🖥️ Desktop restart clicked');
+                    hideDesktopPauseMenu();
+                    
+                    setTimeout(() => {
+                        resetGameInfo();
+                        simulateKeyPress('Enter');
+                        console.log('🎮 Game restarted from desktop menu');
+                    }, 100);
+                });
+            }
+            
+            if (desktopQuitBtn) {
+                desktopQuitBtn.addEventListener('click', () => {
+                    console.log('🖥️ Desktop quit clicked');
+                    hideDesktopPauseMenu();
+                    
+                    // Show confirmation dialog
+                    if (confirm('Sei sicuro di voler uscire dal gioco? Il progresso andrà perso.')) {
+                        // Stop the game and return to start screen
+                        stopTimer();
+                        
+                        setTimeout(() => {
+                            // Hide game container and show start screen
+                            const gameContainer = document.querySelector('.game-container');
+                            const startScreen = document.getElementById('startScreen');
+                            
+                            if (gameContainer) gameContainer.classList.remove('visible');
+                            if (startScreen) {
+                                startScreen.classList.remove('hidden');
+                                startScreen.style.display = 'flex';
+                            }
+                            
+                            // Reset game state
+                            gameStartRequested = false;
+                            console.log('🚪 Returned to start screen');
+                        }, 500);
+                    } else {
+                        // User cancelled, show menu again
+                        showDesktopPauseMenu();
+                    }
+                });
+            }
+            
+            if (restartBtnMenu) {
+                restartBtnMenu.addEventListener('click', () => {
+                    console.log('📱 Restart clicked');
+                    hideMobilePauseMenu();
+                    
+                    // Wait a moment then restart
+                    setTimeout(() => {
+                        resetGameInfo();
+                        simulateKeyPress('Enter');
+                        console.log('📱 Game restarted');
+                    }, 100);
+                });
+            }
+            
+            // Close menus when clicking outside
+            const mobileMenu = document.getElementById('mobilePauseMenu');
+            const desktopMenu = document.getElementById('desktopPauseMenu');
+            
+            if (mobileMenu || desktopMenu) {
+                document.addEventListener('click', (e) => {
+                    // Mobile menu
+                    if (mobileMenu && !mobileMenu.contains(e.target) && mobileMenu.classList.contains('active')) {
+                        console.log('📱 Mobile menu closed by clicking outside');
+                        hideMobilePauseMenu();
+                        
+                        // Resume game when closing menu
+                        setTimeout(() => {
+                            if (typeof Module !== 'undefined' && Module._isGamePaused) {
+                                const isPaused = Module._isGamePaused();
+                                if (isPaused) {
+                                    simulateKeyPress('Escape');
+                                    console.log('📱 Game auto-resumed');
+                                }
+                            }
+                        }, 100);
+                    }
+                    
+                    // Desktop menu
+                    if (desktopMenu && !desktopMenu.querySelector('.desktop-pause-content').contains(e.target) && desktopMenu.classList.contains('active')) {
+                        console.log('🖥️ Desktop menu closed by clicking outside');
+                        hideDesktopPauseMenu();
+                        
+                        // Resume game when closing menu
+                        setTimeout(() => {
+                            if (isPaused) {
+                                forceResume('desktop');
+                                
+                                setTimeout(() => {
+                                    try {
+                                        if (typeof Module !== 'undefined' && Module._isGamePaused && Module._isGamePaused()) {
+                                            simulateKeyPress('Escape');
+                                            console.log('🖥️ Game auto-resumed from outside click');
+                                        }
+                                    } catch(e) {
+                                        console.log('Error resuming C++ game:', e);
+                                    }
+                                }, 50);
+                            }
+                        }, 100);
+                    }
+                });
+            }
+            
+            // Inizializza il monitoring del game over una sola volta per mobile
+            console.log('🎮 Inizializzando sistema mobile...');
             setTimeout(() => {
                 if (window.innerWidth <= 768) {
+                    console.log('📱 Dispositivo mobile rilevato - avvio monitoring');
                     startGameOverMonitoring();
+                } else {
+                    console.log('🖥️ Dispositivo desktop - nessun monitoring mobile');
                 }
             }, 2000);
         });
@@ -2962,7 +3697,7 @@
             setTimeout(() => {
                 if (!isGameOver && !isPaused) {
                     console.log('📱 Pausing JavaScript state first');
-                    forcePause();
+                    forcePause('mobile');
                     
                     // Now pause C++ game engine (only once!)
                     setTimeout(() => {
@@ -2988,69 +3723,7 @@
                 }, 500);
             }
         }
-        
-        // Mobile pause menu event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            const resumeBtn = document.getElementById('resumeGameBtn');
-            const restartBtn = document.getElementById('restartGameBtn');
-            
-            if (resumeBtn) {
-                resumeBtn.addEventListener('click', () => {
-                    console.log('📱 Resume clicked');
-                    hideMobilePauseMenu();
-                    
-                    // Resume both JavaScript AND C++ game
-                    setTimeout(() => {
-                        if (isPaused) {
-                            console.log('📱 Resuming JavaScript state first');
-                            forceResume();
-                            
-                            // Now resume C++ game engine (only once!)
-                            setTimeout(() => {
-                                console.log('📱 Resuming C++ game engine');
-                                simulateKeyPress('Escape');
-                            }, 50);
-                        }
-                    }, 100);
-                });
-            }
-            
-            if (restartBtn) {
-                restartBtn.addEventListener('click', () => {
-                    console.log('📱 Restart clicked');
-                    hideMobilePauseMenu();
-                    
-                    // Wait a moment then restart
-                    setTimeout(() => {
-                        resetGameInfo();
-                        simulateKeyPress('Enter');
-                        console.log('📱 Game restarted');
-                    }, 100);
-                });
-            }
-            
-            // Close menu when clicking outside (but resume game)
-            const menu = document.getElementById('mobilePauseMenu');
-            if (menu) {
-                document.addEventListener('click', (e) => {
-                    if (!menu.contains(e.target) && menu.classList.contains('active')) {
-                        console.log('📱 Menu closed by clicking outside');
-                        hideMobilePauseMenu();
-                        
-                        // Resume game when closing menu
-                        setTimeout(() => {
-                            if (typeof Module !== 'undefined' && Module._isGamePaused) {
-                                const isPaused = Module._isGamePaused();
-                                if (isPaused) {
-                                    simulateKeyPress('Escape');
-                                    console.log('📱 Game auto-resumed');
-                                }
-                            }
-                        }, 100);
-                    }
-                });
-            }
-        });
+
         
     </script>
     
