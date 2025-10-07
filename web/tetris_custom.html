@@ -3027,6 +3027,171 @@
             }
         }
         
+        /* ==================== DESKTOP GAME OVER OTTIMIZZATO ==================== */
+        
+        /* Desktop standard (1025px+) */
+        @media (min-width: 1025px) and (max-height: 900px) {
+            .gameover-content {
+                max-width: 900px;
+                width: 70%;
+                padding: 2rem;
+                max-height: none;
+                overflow: visible;
+                overflow-y: visible;
+                margin: auto;
+            }
+            
+            .gameover-title {
+                font-size: clamp(2.5rem, 4vw, 3.5rem);
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+            
+            .gameover-subtitle {
+                text-align: center;
+                font-size: 1.2rem;
+                margin-bottom: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+                justify-content: center;
+                max-width: 800px;
+                margin: 0 auto 2rem auto;
+            }
+            
+            .stat-card {
+                padding: 1.5rem;
+                text-align: center;
+                margin: 0;
+            }
+            
+            .stat-icon {
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+                font-weight: bold;
+            }
+            
+            .stat-label {
+                font-size: 0.9rem;
+                text-align: center;
+            }
+            
+            .record-card {
+                max-width: 600px;
+                margin: 2rem auto;
+                padding: 1.5rem;
+                text-align: center;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .record-icon {
+                font-size: 2.5rem;
+            }
+            
+            .record-value {
+                font-size: 2.2rem;
+            }
+            
+            .gameover-message {
+                font-size: 1.2rem;
+                text-align: center;
+                margin: 2rem auto;
+                max-width: 600px;
+            }
+            
+            .gameover-actions {
+                flex-direction: row;
+                gap: 2rem;
+                justify-content: center;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            .gameover-btn {
+                flex: 1;
+                max-width: 200px;
+                font-size: 1.1rem;
+                padding: 1.2rem 2rem;
+            }
+        }
+        
+        /* Desktop wide (1400px+) */
+        @media (min-width: 1400px) {
+            .gameover-content {
+                max-width: 1000px;
+                width: 60%;
+                padding: 2.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 2rem;
+                max-width: 900px;
+            }
+            
+            .stat-card {
+                padding: 2rem;
+            }
+            
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .gameover-btn {
+                max-width: 250px;
+                font-size: 1.2rem;
+                padding: 1.3rem 2.2rem;
+            }
+        }
+        
+        /* Fix generale per desktop - rimuove completamente scroll */
+        @media (min-width: 1025px) {
+            .gameover-overlay {
+                overflow: hidden;
+                overflow-y: hidden;
+                padding: 1rem;
+            }
+            
+            .gameover-content {
+                overflow: visible;
+                overflow-y: visible;
+                max-height: 90vh;
+                height: auto;
+            }
+            
+            .stats-grid {
+                justify-items: center;
+                place-items: center;
+            }
+            
+            .stat-card {
+                justify-self: center;
+                align-self: center;
+            }
+        }
+        
+        /* Override per tutte le media query desktop che hanno overflow-y: auto */
+        @media (min-width: 1025px) {
+            /* iPad Mini/Standard Landscape */
+            .gameover-content {
+                overflow-y: visible !important;
+                max-height: none !important;
+            }
+        }
+        
         /* ==================== SUPPORTO TOUCH E ALTA DENSITÀ ==================== */
         
         /* Touch feedback per mobile */
