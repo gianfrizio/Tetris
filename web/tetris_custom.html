@@ -6478,72 +6478,16 @@
         // Attiva anche i controlli body
         setTimeout(addBodyTouchControls, 500);
         
-        // ==================== MOBILE TOUCH SUPPORT PER GAME OVER ====================
+        // ==================== MOBILE TOUCH SUPPORT PER GAME OVER DISABILITATO ====================
         
         /**
-         * Aggiunge supporto touch per la schermata game over
+         * DISABILITATO: Supporto touch gesture per la schermata game over
+         * 
+         * Le gesture automatiche (swipe, double tap) sono state rimosse per evitare
+         * riavvii accidentali durante lo scroll della pagina game over.
+         * 
+         * Ora si utilizzano SOLO i pulsanti dedicati per ricominciare o tornare al menu.
          */
-        function addGameOverTouchSupport() {
-            const gameOverOverlay = document.getElementById('gameOverOverlay');
-            if (!gameOverOverlay) return;
-            
-            // Supporto per swipe per riavviare su mobile
-            let gameOverTouchStartY = 0;
-            let gameOverTouchStartTime = 0;
-            
-            gameOverOverlay.addEventListener('touchstart', function(e) {
-                if (!newGameOverActive) return;
-                
-                const touch = e.touches[0];
-                gameOverTouchStartY = touch.clientY;
-                gameOverTouchStartTime = Date.now();
-            }, { passive: true });
-            
-            gameOverOverlay.addEventListener('touchend', function(e) {
-                if (!newGameOverActive) return;
-                
-                const touch = e.changedTouches[0];
-                const touchEndY = touch.clientY;
-                const touchDuration = Date.now() - gameOverTouchStartTime;
-                const deltaY = gameOverTouchStartY - touchEndY;
-                
-                // Swipe up per riavviare (almeno 50px di movimento, max 800ms)
-                if (deltaY > 50 && touchDuration < 800) {
-                    console.log('🎮 Swipe up detected in game over - restarting');
-                    restartFromGameOver();
-                }
-                // Swipe down per menu (almeno 50px di movimento, max 800ms) 
-                else if (deltaY < -50 && touchDuration < 800) {
-                    console.log('🏠 Swipe down detected in game over - returning to menu');
-                    returnToMainMenu();
-                }
-            }, { passive: true });
-            
-            // Doppio tap per riavviare velocemente
-            let lastGameOverTap = 0;
-            const DOUBLE_TAP_DELAY = 300;
-            
-            gameOverOverlay.addEventListener('touchend', function(e) {
-                if (!newGameOverActive) return;
-                
-                // Ignora se è un pulsante specifico
-                if (e.target.classList.contains('gameover-btn') || 
-                    e.target.closest('.gameover-btn')) return;
-                
-                const now = Date.now();
-                if (now - lastGameOverTap < DOUBLE_TAP_DELAY) {
-                    console.log('🎮 Double tap detected in game over - restarting');
-                    restartFromGameOver();
-                } else {
-                    lastGameOverTap = now;
-                }
-            }, { passive: true });
-            
-            console.log('✅ Game over touch support added');
-        }
-        
-        // Inizializza il supporto touch per game over quando il DOM è pronto
-        setTimeout(addGameOverTouchSupport, 100);
         
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
