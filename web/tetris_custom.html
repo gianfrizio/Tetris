@@ -422,6 +422,15 @@
 
         /* Mobile Optimization */
         @media (max-width: 768px) {
+            /* Disabilita animazioni pesanti su mobile per migliori performance */
+            .falling-block {
+                display: none !important;
+            }
+            
+            .gameover-particles {
+                display: none !important;
+            }
+            
             .game-wrapper {
                 padding: 1rem;
                 margin: 0 0.5rem 1rem;
