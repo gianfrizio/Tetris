@@ -7470,16 +7470,15 @@
             const savedVolume = localStorage.getItem('tetris-volume');
             const savedMuted = localStorage.getItem('tetris-muted') === 'true';
             
-            if (savedVolume !== null) {
-                const volume = parseInt(savedVolume); // Valore 0-100
-                volumeSlider.value = volume;
-                volumeValue.textContent = volume;
-                
-                // Converti e applica il volume se il modulo è caricato
-                if (typeof Module !== 'undefined' && Module._setVolume) {
-                    const sdlVolume = Math.round((volume / 100) * 128);
-                    Module._setVolume(sdlVolume);
-                }
+            // Determina il volume da usare (salvato o default 30%)
+            const volumeToUse = savedVolume !== null ? parseInt(savedVolume) : 30;
+            volumeSlider.value = volumeToUse;
+            volumeValue.textContent = volumeToUse;
+            
+            // Se non c'era un volume salvato, salva il default
+            if (savedVolume === null) {
+                localStorage.setItem('tetris-volume', '30');
+                console.log('🔊 Default volume set to 30%');
             }
             
             if (savedMuted) {
@@ -7487,10 +7486,28 @@
                 muteIcon.textContent = '🔇';
                 muteText.textContent = 'Unmute';
                 
-                // Applica il mute se il modulo è caricato
-                if (typeof Module !== 'undefined' && Module._muteAudio) {
-                    Module._muteAudio(true);
+                // IMPORTANTE: Non usare muteAudio all'avvio, usa volume 0
+                // Questo permette al contesto audio di inizializzarsi correttamente
+                if (typeof Module !== 'undefined' && Module._setVolume) {
+                    Module._setVolume(0);
+                    console.log('🔇 Audio muted via volume 0 (allows audio context to initialize)');
                 }
+            } else {
+                // Se non è mutato, applica il volume normalmente
+                if (typeof Module !== 'undefined' && Module._setVolume) {
+                    const sdlVolume = Math.round((volumeToUse / 100) * 128);
+                    Module._setVolume(sdlVolume);
+                    console.log('� Volume applied:', volumeToUse + '%');
+                }
+                
+                // Riapplica dopo un timeout per sicurezza
+                setTimeout(() => {
+                    if (typeof Module !== 'undefined' && Module._setVolume) {
+                        const sdlVolume = Math.round((volumeToUse / 100) * 128);
+                        Module._setVolume(sdlVolume);
+                        console.log('🔊 Volume reapplied after module load:', volumeToUse + '%');
+                    }
+                }, 500);
             }
             
             // Previeni propagazione eventi touch sui controlli audio
@@ -7582,31 +7599,43 @@
                 const isMuted = this.classList.contains('muted');
                 
                 if (isMuted) {
-                    // Unmute
+                    // Unmute - ripristina il volume
                     this.classList.remove('muted');
                     muteIcon.textContent = '🔊';
                     muteText.textContent = 'Mute';
+                    localStorage.setItem('tetris-muted', 'false');
                     
-                    if (typeof Module !== 'undefined' && Module._muteAudio) {
+                    if (typeof Module !== 'undefined' && Module._setVolume) {
                         try {
-                            Module._muteAudio(false);
-                            localStorage.setItem('tetris-muted', 'false');
-                            console.log('🔊 Audio unmuted');
+                            const currentVolume = parseInt(volumeSlider.value || '30');
+                            const sdlVolume = Math.round((currentVolume / 100) * 128);
+                            
+                            // Imposta il volume direttamente (non usare muteAudio)
+                            Module._setVolume(sdlVolume);
+                            console.log('🔊 Audio unmuted - volume restored to:', currentVolume + '%');
+                            
+                            // Riapplica dopo un breve delay per sicurezza
+                            setTimeout(() => {
+                                Module._setVolume(sdlVolume);
+                                console.log('🔊 Volume reconfirmed:', currentVolume + '%');
+                            }, 100);
+                            
                         } catch (e) {
                             console.error('Error unmuting audio:', e);
                         }
                     }
                 } else {
-                    // Mute
+                    // Mute - imposta volume a 0
                     this.classList.add('muted');
                     muteIcon.textContent = '🔇';
                     muteText.textContent = 'Unmute';
+                    localStorage.setItem('tetris-muted', 'true');
                     
-                    if (typeof Module !== 'undefined' && Module._muteAudio) {
+                    if (typeof Module !== 'undefined' && Module._setVolume) {
                         try {
-                            Module._muteAudio(true);
-                            localStorage.setItem('tetris-muted', 'true');
-                            console.log('🔇 Audio muted');
+                            // Usa volume 0 invece di muteAudio
+                            Module._setVolume(0);
+                            console.log('🔇 Audio muted via volume 0');
                         } catch (e) {
                             console.error('Error muting audio:', e);
                         }
@@ -7644,7 +7673,7 @@
                     wasAudioMutedBeforeBackground = currentMuteState;
                     
                     // Salva il volume corrente
-                    originalVolume = parseInt(localStorage.getItem('tetris-volume') || '50');
+                    originalVolume = parseInt(localStorage.getItem('tetris-volume') || '30');
                     
                     // Muta l'audio quando va in background
                     if (!currentMuteState) {
@@ -7663,8 +7692,11 @@
         function handleForegroundAudio() {
             if (typeof Module !== 'undefined' && Module._muteAudio) {
                 try {
-                    // Ripristina l'audio solo se non era già mutato dall'utente
-                    if (!wasAudioMutedBeforeBackground) {
+                    // Controlla lo stato corrente del mute dal localStorage
+                    const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
+                    
+                    // Ripristina l'audio solo se non era già mutato dall'utente E se non è attualmente mutato
+                    if (!wasAudioMutedBeforeBackground && !currentMuteState) {
                         Module._muteAudio(false);
                         
                         // Ripristina anche il volume se necessario
@@ -7674,6 +7706,9 @@
                         }
                         
                         console.log('🔊 Audio resumed - app in foreground');
+                    } else if (currentMuteState) {
+                        // Se l'utente ha mutato manualmente, mantieni il mute
+                        console.log('🔇 Audio remains muted - user preference');
                     }
                 } catch (e) {
                     console.error('Error handling foreground audio:', e);
