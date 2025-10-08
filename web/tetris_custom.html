@@ -1299,6 +1299,32 @@
                 font-size: 1rem;
             }
         }
+
+        /* Tablet adjustments: center box contents similar to mobile but with slightly larger spacing */
+        @media only screen and (min-width: 429px) and (max-width: 1024px) {
+            .stat-card, .stat-item, .info-item, .info-panel, .record-card {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                gap: 0.5rem !important;
+            }
+
+            .stat-item, .info-item {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .stat-label, .info-label { text-align: center !important; margin-bottom: 0.4rem !important; }
+            .stat-number, .info-value, .record-value { text-align: center !important; }
+
+            /* Slightly increase paddings on tablets */
+            .gameover-content { padding: 1.4rem; }
+            .gameover-title { font-size: clamp(2rem, 6vw, 3rem); }
+            .gameover-btn { padding: 0.85rem 1.1rem; }
+        }
         
         /* Menu di pausa mobile - Large */
         @media (min-width: 481px) and (max-width: 768px) {
@@ -1996,6 +2022,138 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+          /* ==================== IPHONE FAMILY ADJUSTMENTS ==================== */
+          /* Target: Generic iPhone CSS tweaks
+              - covers iPhone SE up to Pro Max by targeting device widths up to 428px
+              - matches common DPR values 2 and 3
+          */
+          @media only screen and (max-device-width: 428px) and (-webkit-min-device-pixel-ratio: 2) {
+            /* Respect safe area (notch) */
+            .gameover-overlay {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .gameover-content {
+                width: calc(100% - 32px);
+                max-width: calc(390px - 32px);
+                padding: 1.2rem;
+                margin: 1.2rem auto;
+                border-radius: 18px;
+                box-shadow: 0 18px 36px rgba(0,0,0,0.6);
+            }
+
+            .gameover-title {
+                font-size: 2rem; /* scale down title to fit */
+                gap: 0.25rem;
+            }
+
+            .gameover-subtitle {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .gameover-stats {
+                margin-bottom: 1rem;
+            }
+
+            .gameover-message {
+                font-size: 0.95rem;
+            }
+
+            .gameover-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+                align-items: stretch;
+                margin-top: 0.6rem;
+            }
+
+            .gameover-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.95rem;
+                border-radius: 12px;
+                min-width: 0;
+            }
+
+            /* Make sure interactive elements are above the background and easy to tap */
+            .gameover-btn, .gameover-instructions, .gameover-message {
+                z-index: 12;
+                touch-action: manipulation;
+            }
+
+            /* Reduce particle intensity and size to improve performance and visibility */
+            .gameover-particles, .falling-block {
+                opacity: 0.08 !important;
+                width: 8px !important;
+                height: 8px !important;
+            }
+
+            /* Prevent the canvas or other background elements from stealing taps */
+            .gameover-overlay .game-wrapper, .gameover-overlay ~ #canvas {
+                pointer-events: none !important;
+            }
+
+            /* Ensure the overlay scrolls properly on iOS and content isn't hidden by the notch */
+            .gameover-overlay {
+                -webkit-overflow-scrolling: touch;
+                padding-left: max(env(safe-area-inset-left), 12px);
+                padding-right: max(env(safe-area-inset-right), 12px);
+            }
+        }
+
+        /* Fallback for narrow viewports (in case some browsers don't support device-width queries)
+           This targets small viewports up to 428px wide and adjusts same properties. */
+        @media only screen and (max-width: 428px) {
+            .gameover-overlay {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                -webkit-overflow-scrolling: touch;
+                padding-left: max(env(safe-area-inset-left), 10px);
+                padding-right: max(env(safe-area-inset-right), 10px);
+            }
+
+            .gameover-content {
+                width: calc(100% - 28px);
+                max-width: calc(100vw - 28px);
+                padding: 1rem;
+                margin: 1rem auto;
+                border-radius: 16px;
+            }
+
+            .gameover-title { font-size: 1.9rem; }
+            .gameover-subtitle { font-size: 0.95rem; }
+            .gameover-message { font-size: 0.92rem; }
+            .gameover-btn { padding: 0.7rem 0.9rem; font-size: 0.92rem; }
+            .gameover-particles, .falling-block { opacity: 0.06 !important; width: 7px !important; height: 7px !important; }
+
+            /* Center contents inside statistic/info/record boxes on small screens */
+            .stat-card, .stat-item, .info-item, .info-panel, .record-card {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                gap: 0.4rem !important;
+            }
+
+            /* Some mobile rules earlier switch stat-item to row - override here */
+            .stat-item, .info-item {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .stat-label, .info-label {
+                margin-bottom: 0.35rem !important;
+                text-align: center !important;
+            }
+
+            .stat-number, .info-value, .record-value {
+                text-align: center !important;
             }
         }
         
