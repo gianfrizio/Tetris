@@ -6433,40 +6433,9 @@
                 if (canvasTouchActive) return;
                 if (!gameStartRequested) return;
 
-                e.stopPropagation();
-
-                const touch = e.changedTouches[0];
-                const touchEndX = touch.clientX;
-                const touchEndY = touch.clientY;
-                const touchEndTime = Date.now();
-
-                const deltaX = touchEndX - touchStartX;
-                const deltaY = touchEndY - touchStartY;
-                const deltaTime = touchEndTime - touchStartTime;
-
-                const minSwipeDistance = getMinSwipeDistanceForBody();
-
-                // Tap (rotate) with debounce
-                if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance && deltaTime < TAP_HOLD_TIME) {
-                    const now = Date.now();
-                    if (now - lastTapTime > TAP_DEBOUNCE) {
-                        lastTapTime = now;
-                        simulateKeyPress('ArrowUp');
-                    }
-                    return;
-                }
-
-                // Horizontal swipe
-                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                    if (deltaX > 0) attemptLateralMove('right'); else attemptLateralMove('left');
-                    return;
-                }
-
-                // Vertical swipe down
-                if (deltaY > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
-                    simulateKeyPress('ArrowDown');
-                    return;
-                }
+                // TUTTI I CONTROLLI TOUCH RIMOSSI DAL BODY
+                // Tap, swipe laterali e swipe verticali funzionano SOLO sul canvas
+                // Questo evita input accidentali quando si tocca fuori dal board
             }, { passive: false });
         }
         
