@@ -4328,16 +4328,11 @@
                     <span class="btn-icon">🔄</span>
                     <span class="btn-text">Gioca Ancora</span>
                 </button>
-                
-                <button class="gameover-btn secondary" id="gameOverMenuBtn">
-                    <span class="btn-icon">🏠</span>
-                    <span class="btn-text">Menu Principale</span>
-                </button>
             </div>
             
             <!-- Istruzioni per mobile/desktop -->
             <div class="gameover-instructions">
-                <div class="desktop-instruction">Premi <kbd>INVIO</kbd> per riavviare o <kbd>ESC</kbd> per il menu</div>
+                <div class="desktop-instruction">Premi <kbd>GiOCA ANCORA</kbd> per riavviare</div>
                 <div class="mobile-instruction">👆 Tocca "Gioca Ancora" per riavviare</div>
             </div>
         </div>
@@ -6920,24 +6915,11 @@
                     restartFromGameOver();
                     break;
                     
-                case 'Escape':
-                    event.preventDefault();
-                    console.log('🏠 Escape pressed in game over - returning to menu');
-                    returnToMainMenu();
-                    break;
-                    
                 case 'r':
                 case 'R':
                     event.preventDefault();
                     console.log('🔄 R pressed in game over - restarting');
                     restartFromGameOver();
-                    break;
-                    
-                case 'q':
-                case 'Q':
-                    event.preventDefault();
-                    console.log('🚪 Q pressed in game over - quitting to menu');
-                    returnToMainMenu();
                     break;
             }
         }
@@ -6996,37 +6978,6 @@
                 }
                 
                 console.log('✅ Complete game restart finished');
-            }, 300);
-        }
-        
-        /**
-         * Torna al menu principale dalla schermata game over
-         */
-        function returnToMainMenu() {
-            console.log('🏠 Returning to main menu from game over');
-            
-            hideNewGameOver();
-            
-            // Aspetta che l'animazione finisca
-            setTimeout(() => {
-                // Ferma tutti i timer e reset dello stato
-                stopStatsUpdater();
-                gameStartRequested = false;
-                
-                // Nascondi il container del gioco
-                const gameContainer = document.querySelector('.game-container');
-                if (gameContainer) {
-                    gameContainer.classList.remove('visible');
-                }
-                
-                // Mostra la schermata iniziale
-                const startScreen = document.getElementById('startScreen');
-                if (startScreen) {
-                    startScreen.classList.remove('hidden');
-                    startScreen.style.display = 'flex';
-                }
-                
-                console.log('✅ Returned to main menu');
             }, 300);
         }
         
@@ -7158,19 +7109,11 @@
             
             // Pulsanti della nuova schermata game over
             const gameOverRestartBtn = document.getElementById('gameOverRestartBtn');
-            const gameOverMenuBtn = document.getElementById('gameOverMenuBtn');
             
             if (gameOverRestartBtn) {
                 gameOverRestartBtn.addEventListener('click', () => {
                     console.log('🔄 Game over restart button clicked');
                     restartFromGameOver();
-                });
-            }
-            
-            if (gameOverMenuBtn) {
-                gameOverMenuBtn.addEventListener('click', () => {
-                    console.log('🏠 Game over menu button clicked');
-                    returnToMainMenu();
                 });
             }
             
