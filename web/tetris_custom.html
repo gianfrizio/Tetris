@@ -7628,6 +7628,167 @@
             setTimeout(initAudioControls, 2000);
         });
 
+        // ==================== GESTIONE AUDIO IN BACKGROUND ====================
+        
+        let wasAudioMutedBeforeBackground = false;
+        let originalVolume = 100;
+        
+        /**
+         * Gestisce l'audio quando l'app va in background
+         */
+        function handleBackgroundAudio() {
+            if (typeof Module !== 'undefined' && Module._muteAudio) {
+                try {
+                    // Salva lo stato attuale dell'audio prima di mutarlo
+                    const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
+                    wasAudioMutedBeforeBackground = currentMuteState;
+                    
+                    // Salva il volume corrente
+                    originalVolume = parseInt(localStorage.getItem('tetris-volume') || '50');
+                    
+                    // Muta l'audio quando va in background
+                    if (!currentMuteState) {
+                        Module._muteAudio(true);
+                        console.log('🔇 Audio paused - app in background');
+                    }
+                } catch (e) {
+                    console.error('Error handling background audio:', e);
+                }
+            }
+        }
+        
+        /**
+         * Ripristina l'audio quando l'app torna in foreground
+         */
+        function handleForegroundAudio() {
+            if (typeof Module !== 'undefined' && Module._muteAudio) {
+                try {
+                    // Ripristina l'audio solo se non era già mutato dall'utente
+                    if (!wasAudioMutedBeforeBackground) {
+                        Module._muteAudio(false);
+                        
+                        // Ripristina anche il volume se necessario
+                        if (typeof Module._setVolume !== 'undefined') {
+                            const sdlVolume = Math.round((originalVolume / 100) * 128);
+                            Module._setVolume(sdlVolume);
+                        }
+                        
+                        console.log('🔊 Audio resumed - app in foreground');
+                    }
+                } catch (e) {
+                    console.error('Error handling foreground audio:', e);
+                }
+            }
+        }
+        
+        // ==================== PAGE VISIBILITY API (Desktop) ====================
+        
+        // Gestisce il cambio di tab/finestra su desktop
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Pagina non visibile (tab cambiato, finestra minimizzata, etc.)
+                handleBackgroundAudio();
+            } else {
+                // Pagina di nuovo visibile
+                setTimeout(() => {
+                    handleForegroundAudio();
+                }, 100); // Piccolo delay per assicurarsi che tutto sia pronto
+            }
+        });
+        
+        // ==================== MOBILE SPECIFIC EVENTS ====================
+        
+        let isAppActive = true;
+        
+        // Event listeners per dispositivi mobili
+        window.addEventListener('focus', function() {
+            isAppActive = true;
+            setTimeout(() => {
+                handleForegroundAudio();
+            }, 200); // Delay maggiore per mobile
+        });
+        
+        window.addEventListener('blur', function() {
+            isAppActive = false;
+            handleBackgroundAudio();
+        });
+        
+        // Event listeners specifici per iOS
+        window.addEventListener('pagehide', function() {
+            isAppActive = false;
+            handleBackgroundAudio();
+        });
+        
+        window.addEventListener('pageshow', function() {
+            isAppActive = true;
+            setTimeout(() => {
+                handleForegroundAudio();
+            }, 300); // Delay ancora maggiore per iOS
+        });
+        
+        // Event listeners per Android
+        document.addEventListener('pause', function() {
+            isAppActive = false;
+            handleBackgroundAudio();
+        });
+        
+        document.addEventListener('resume', function() {
+            isAppActive = true;
+            setTimeout(() => {
+                handleForegroundAudio();
+            }, 250);
+        });
+        
+        // ==================== ADDITIONAL MOBILE DETECTION ====================
+        
+        // Rileva quando l'utente naviga via (principalmente per mobile)
+        window.addEventListener('beforeunload', function() {
+            handleBackgroundAudio();
+        });
+        
+        // Rileva quando l'app diventa inattiva su iOS (home button, chiamate, etc.)
+        document.addEventListener('webkitvisibilitychange', function() {
+            if (document.webkitHidden) {
+                handleBackgroundAudio();
+            } else {
+                setTimeout(() => {
+                    handleForegroundAudio();
+                }, 200);
+            }
+        });
+        
+        // Event listener per il cambio di orientamento (può indicare un cambio di contesto)
+        window.addEventListener('orientationchange', function() {
+            // Piccolo delay dopo il cambio di orientamento
+            setTimeout(() => {
+                if (isAppActive && !document.hidden) {
+                    handleForegroundAudio();
+                }
+            }, 500);
+        });
+        
+        // ==================== TOUCH AND INTERACTION RESUMPTION ====================
+        
+        // Rileva quando l'utente interagisce di nuovo con la pagina
+        let interactionTimeout;
+        
+        function handleUserInteraction() {
+            clearTimeout(interactionTimeout);
+            interactionTimeout = setTimeout(() => {
+                if (!document.hidden && isAppActive) {
+                    handleForegroundAudio();
+                }
+            }, 100);
+        }
+        
+        // Event listeners per interazioni utente (ripristino audio dopo interazione)
+        document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+        document.addEventListener('touchend', handleUserInteraction, { passive: true });
+        document.addEventListener('click', handleUserInteraction);
+        document.addEventListener('keydown', handleUserInteraction);
+        
+        console.log('🎵 Background audio management initialized');
+
         
     </script>
     
