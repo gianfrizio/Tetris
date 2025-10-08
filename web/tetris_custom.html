@@ -143,11 +143,10 @@
             align-items: flex-start;
             justify-content: center;
             gap: 2rem;
-            min-height: 500px;
         }
 
         .left-stats, .right-info {
-            flex: 0 0 200px;
+            flex: 0 0 250px;
             display: flex;
             flex-direction: column;
             gap: 1rem; /* Spazio tra i pannelli nella colonna */
@@ -157,7 +156,7 @@
             flex: 0 0 auto;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
         }
 
         /* Pannelli statistiche */
@@ -271,7 +270,8 @@
 
         /* Canvas styling */
         #canvas {
-            border-radius: 12px;
+            border-radius: 16px;
+            border: 2px solid rgba(100, 255, 218, 0.4);
             box-shadow: 
                 0 10px 30px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -284,15 +284,6 @@
             height: auto;
             max-width: 100%;  /* never overflow its container */
             touch-action: none; /* prevent double interactions on mobile */
-        }
-
-        /* Responsive canvas wrapper to control visual scaling */
-        .game-canvas {
-            flex: 0 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            width: 100%;
         }
 
         /* Controlli */
@@ -467,6 +458,15 @@
                 flex: none;
                 width: 100%;
                 max-width: 400px;
+            }
+            
+            /* Inverti l'ordine dei pannelli su mobile: AUDIO prima, INFO dopo */
+            .right-info .info-panel:not(.audio-controls) {
+                order: 2;
+            }
+            
+            .right-info .info-panel.audio-controls {
+                order: 1;
             }
 
             .stats-panel, .info-panel {
@@ -3688,7 +3688,6 @@
             }
             
             .mobile-instruction::after {
-                content: ' • Swipe ↑ riavvia • Swipe ↓ menu • Doppio tap riavvia';
                 display: block;
                 font-size: 0.8rem;
                 color: #64ffda;
@@ -7666,7 +7665,7 @@
          * Gestisce l'audio quando l'app va in background
          */
         function handleBackgroundAudio() {
-            if (typeof Module !== 'undefined' && Module._muteAudio) {
+            if (typeof Module !== 'undefined' && Module._setVolume) {
                 try {
                     // Salva lo stato attuale dell'audio prima di mutarlo
                     const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
@@ -7675,10 +7674,10 @@
                     // Salva il volume corrente
                     originalVolume = parseInt(localStorage.getItem('tetris-volume') || '30');
                     
-                    // Muta l'audio quando va in background
+                    // Abbassa il volume quando va in background (solo se non era già mutato)
                     if (!currentMuteState) {
-                        Module._muteAudio(true);
-                        console.log('🔇 Audio paused - app in background');
+                        Module._setVolume(0);
+                        console.log('🔇 Audio volume set to 0 - app in background');
                     }
                 } catch (e) {
                     console.error('Error handling background audio:', e);
@@ -7690,24 +7689,22 @@
          * Ripristina l'audio quando l'app torna in foreground
          */
         function handleForegroundAudio() {
-            if (typeof Module !== 'undefined' && Module._muteAudio) {
+            if (typeof Module !== 'undefined' && Module._setVolume) {
                 try {
                     // Controlla lo stato corrente del mute dal localStorage
                     const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
                     
-                    // Ripristina l'audio solo se non era già mutato dall'utente E se non è attualmente mutato
+                    // Ripristina il volume solo se:
+                    // 1. Non era mutato prima di andare in background
+                    // 2. Non è attualmente mutato dall'utente
                     if (!wasAudioMutedBeforeBackground && !currentMuteState) {
-                        Module._muteAudio(false);
-                        
-                        // Ripristina anche il volume se necessario
-                        if (typeof Module._setVolume !== 'undefined') {
-                            const sdlVolume = Math.round((originalVolume / 100) * 128);
-                            Module._setVolume(sdlVolume);
-                        }
-                        
-                        console.log('🔊 Audio resumed - app in foreground');
+                        // Usa il volume salvato nel localStorage, non originalVolume
+                        const savedVolume = parseInt(localStorage.getItem('tetris-volume') || '30');
+                        const sdlVolume = Math.round((savedVolume / 100) * 128);
+                        Module._setVolume(sdlVolume);
+                        console.log('🔊 Audio volume restored to', savedVolume + '% - app in foreground');
                     } else if (currentMuteState) {
-                        // Se l'utente ha mutato manualmente, mantieni il mute
+                        // Se l'utente ha mutato manualmente, mantieni il mute (volume 0)
                         console.log('🔇 Audio remains muted - user preference');
                     }
                 } catch (e) {
