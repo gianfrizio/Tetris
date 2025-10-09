@@ -7156,7 +7156,7 @@
         // Flag per evitare inizializzazioni multiple
         let gameOverMonitoringInitialized = false;
         
-        function startGameOverMonitoring() {
+    function startGameOverMonitoring() {
             // Permetti re-inizializzazione se necessario
             if (gameOverCheckInterval) {
                 console.log('� Clearing existing game over monitoring');
@@ -7167,14 +7167,21 @@
             gameOverMonitoringInitialized = true; 
             console.log('✅ Starting game over monitoring');
             
+            // Add a short grace period after init to avoid false positives from preloaded state
+            const monitoringStartTime = Date.now();
+
             gameOverCheckInterval = setInterval(() => {
+                // ignore checks during the first 3 seconds
+                if (Date.now() - monitoringStartTime < 3000) return;
+
                 if (typeof Module !== 'undefined' && Module._getScore && Module._isGameRunning) {
                     try {
                         const currentScore = Module._getScore();
                         const gameRunning = Module._isGameRunning();
                         
                         // Game over detected: not running and we had a score
-                        if (!gameRunning && currentScore > 0 && !newGameOverActive && !mobileGameOverActive) {
+                        // Only trigger if we previously observed the game running with a score
+                        if (!gameRunning && currentScore > 0 && !newGameOverActive && !mobileGameOverActive && lastKnownScore > 0) {
                             console.log('🎮 Game over detected by monitoring:', {
                                 score: currentScore,
                                 gameRunning,
@@ -7223,6 +7230,11 @@
                                     clearInterval(restartUpdateInterval);
                                 }
                             }, 100); // Update every 100ms for 1 second
+                        }
+                        
+                        // Update lastKnownScore only when the game is running to avoid false positives
+                        if (gameRunning) {
+                            lastKnownScore = currentScore > 0 ? currentScore : lastKnownScore;
                         }
                     } catch(e) {
                         // Ignore errors accessing Module functions
