@@ -17,8 +17,8 @@ CFLAGS = -Wall -Wextra -O2 \
 
 LDFLAGS = -lSDL2 -lSDL2_mixer -lSDL2_ttf
 
-SRC = tetris.c
-OBJ = $(SRC:.c=.o)
+SRC = tetris_web.cpp
+OBJ = $(SRC:.cpp=.o)
 TARGET = tetris
 
 all: $(TARGET)

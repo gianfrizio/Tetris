@@ -1,0 +1,128 @@
+/* ==================== PANELS ==================== */
+        /* Pannelli statistiche */
+        .stats-panel, .info-panel {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid rgba(100, 255, 218, 0.4);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            /* Previene il tremolio durante l'interazione con lo slider */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            will-change: auto;
+        }
+        
+        /* Solo il pannello stats a sinistra sarà sticky */
+        .left-stats .stats-panel {
+            position: sticky;
+            top: 2rem;
+        }
+        
+        /* Debug: assicurati che i pannelli non si sovrappongano */
+        .right-info .info-panel:nth-child(1) {
+            order: 1;
+        }
+        
+        .right-info .info-panel:nth-child(2) {
+            order: 2;
+        }
+        
+        /* Controllo specifico per pannelli nella colonna destra */
+        .right-info {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            align-items: stretch !important;
+        }
+        
+        .right-info .info-panel {
+            position: static !important; /* Forza posizionamento statico per evitare sovrapposizioni */
+            margin: 0 !important; /* Rimuovi tutti i margin */
+            z-index: auto !important;
+            transform: none !important;
+        }
+        
+        .right-info .info-panel.audio-controls {
+            position: static !important;
+            margin-top: 0 !important;
+        }
+        
+        /* Rimuovi sticky su mobile per evitare conflitti */
+        @media (max-width: 768px) {
+            .stats-panel, .info-panel {
+                position: static;
+            }
+        }
+
+        .stats-title, .info-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #64ffda;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+
+        .stat-item, .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 0.8rem;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover, .info-item:hover {
+            background: rgba(100, 255, 218, 0.2);
+            border-color: rgba(100, 255, 218, 0.4);
+            /* Rimosso transform per evitare tremolio */
+            box-shadow: 0 4px 12px rgba(100, 255, 218, 0.2);
+        }
+
+        .stat-label, .info-label {
+            font-size: 0.9rem;
+            color: #b0bec5;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value, .info-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(100, 255, 218, 0.6);
+            background: linear-gradient(45deg, #64ffda, #00bcd4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Canvas styling */
+        #canvas {
+            border-radius: 16px;
+            border: 2px solid rgba(100, 255, 218, 0.4);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: #000;
+            display: block;
+            margin: 0 auto;
+
+            /* Default canvas sizing: let JS set internal buffer but allow CSS scaling */
+            width: auto;      /* preserve default on desktop */
+            height: auto;
+            max-width: 100%;  /* never overflow its container */
+            touch-action: none; /* prevent double interactions on mobile */
+        }
+

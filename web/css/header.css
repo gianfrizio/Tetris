@@ -1,0 +1,43 @@
+/* ==================== HEADER ==================== */
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3, #9c27b0);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(100, 255, 218, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0bec5;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .game-info {
+            font-size: 0.9rem;
+            color: #78909c;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+

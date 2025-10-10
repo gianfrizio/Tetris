@@ -1,0 +1,97 @@
+# -----------------------------
+# Generated .gitignore for Tetris repository
+# -----------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Compiled objects and binaries
+*.o
+*.obj
+*.exe
+*.out
+*.dll
+*.so
+*.a
+
+# Makefile-generated artifacts
+# Executable produced by `make` and object/dependency files
+/tetris
+*.d
+*.gch
+core
+*.dSYM
+
+# Local native sources (ignore because web build is the canonical source)
+tetris.c
+tetris.cpp
+
+# C/C++ build folders
+/build/
+/bin/
+/obj/
+
+# Emscripten / Web build artifacts (local builds)
+# Note: web/ in this repo contains committed build outputs (for Vercel). Do NOT
+# ignore those files globally. Instead, ignore common transient build artifacts
+# while allowing committed web/ files to remain tracked.
+*.mem
+*.map
+
+# Allow tracked web/ files (override any global ignore above)
+!/web/
+!/web/*
+
+# Vercel local folders (ignore local config/output)
+.vercel/
+.vercel_build_output/
+
+# Temporary and log files
+*.log
+*.tmp
+*.swp
+*~
+
+# Fonts/artifacts caches
+/.cache/
+
+# Audio/build caches
+*.egg-info/
+
+# Ignore top-level audio assets directory (local/original assets). Keep web/audio/ tracked.
+/audio/
+!/web/audio/
+
+# Dependency directories (if any)
+node_modules/
+venv/
+env/
+
+# OS generated files
+.Trash-*
+
+# -----------------------------
+# Archive section
+# Files in /archive are local or generated backups and should not be tracked
+# -----------------------------
+/archive/
+
+# If you need to keep specific files from archive, add an allow rule, for example:
+# !/archive/KEEP_ME.txt

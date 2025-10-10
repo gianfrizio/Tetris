@@ -5,7 +5,7 @@ Un clone del classico gioco Tetris implementato sia in **C** che in **C++** usan
 ## 🎮 Versioni Disponibili
 
 ### Tetris C (Originale)
-- **File:** `tetris.c`
+- **File:** `tetris_web.cpp`
 - **Eseguibile:** `tetris`
 - **Compilazione:** `make`
 - **Esecuzione:** `make run` o `./tetris`
@@ -50,7 +50,7 @@ Un'implementazione moderna del classico gioco Tetris in C++ compilata per il web
 
 ## 🚀 Demo Live
 
-**Gioca subito:** [Tetris Web Demo](https://tetris-web-demo.vercel.app) *(sostituisci con il tuo URL Vercel)*
+**Gioca subito:** [Tetris Web Demo]t(https://tetris-pi-mocha.vercel.app/)
 
 ## 📋 Controlli
 
@@ -60,7 +60,7 @@ Un'implementazione moderna del classico gioco Tetris in C++ compilata per il web
 | `←` `→` | Movimento laterale |
 | `↑` | Rotazione pezzo |
 | `↓` | Caduta veloce |
-| `ESC` | Pausa |
+| `ESC` | Menù Pausa |
 | `INVIO` | Ricomincia |
 
 ### 📱 Mobile/Touch
@@ -69,6 +69,7 @@ Un'implementazione moderna del classico gioco Tetris in C++ compilata per il web
 | **Tap** | Rotazione pezzo |
 | **Swipe ←/→** | Movimento laterale |
 | **Swipe ↓** | Caduta veloce |
+| **Tieni premuto** | Menù Pausa |
 
 ## 🛠️ Installazione e Sviluppo
 
@@ -109,26 +110,49 @@ python3 -m http.server 8000
 ```
 Tetris/
 ├── 🎮 CODICE SORGENTE
-│   ├── tetris.c              # Versione C originale
-│   ├── tetris.cpp            # Versione C++ desktop
-│   └── tetris_web.cpp        # Versione WebAssembly
+│  └── tetris_web.cpp        # Versione WebAssembly
 │
 ├── 🔧 BUILD & DEPLOY
 │   ├── build_wasm.sh         # Script compilazione Emscripten
-│   ├── Makefile              # Build nativo C
+│   ├── Makefile              # Build nativo C++
 │   └── vercel.json           # Configurazione Vercel
 │
 ├── 🌐 WEB ASSETS
-│   └── web/
-│       ├── index.html        # Homepage redirect
-│       ├── tetris_custom.html # Interface principale
-│       ├── tetris.js         # Codice Emscripten generato
-│       ├── tetris.wasm       # Binario WebAssembly
-│       ├── tetris.data       # Asset precaricati
-│       └── audio/            # Musica ed effetti sonori
-│
-└── 📚 DOCUMENTAZIONE
-    └── README.md             # Questo file
+    ├── index.html                # Pagina principale 
+    |
+    ├── css/                      # Moduli CSS 
+    │       ├── reset.css                 # Reset e stili base
+    │       ├── animations.css            # Animazioni e keyframes
+    │       ├── header.css                # Header e titolo
+    │       ├── layout.css                # Layout principale
+    │       ├── panels.css                # Pannelli stats e info
+    │       ├── canvas.css                # Stili canvas
+    │       ├── controls.css              # Controlli e pulsanti
+    │       ├── menus.css                 # Menu (start, pause, game over)
+    │       ├── mobile.css                # Stili mobile-specific
+    │       └── responsive.css            # Media queries
+    │
+    ├── js/                       # Moduli JavaScript 
+    │       ├── dom-elements.js           # Riferimenti DOM
+    │       ├── emscripten-setup.js       # Setup WebAssembly Module
+    │       ├── game-start.js             # Logica avvio gioco
+    │       ├── stats-updater.js          # Aggiornamento statistiche
+    │       ├── ui-manager.js             # Gestione UI e layout
+    │       ├── keyboard-controls.js      # Controlli tastiera
+    │       ├── game-over.js              # Gestione game over
+    │       ├── touch-controls.js         # Controlli touch mobile
+    │       ├── audio-controls.js         # Controlli audio
+    │       ├── pause-system.js           # Sistema pausa
+    │       └── init.js                   # Inizializzazione
+    │
+    ├── audio/                        # Effetti sonori e musica
+    ├── tetris.html                   # Crea Canvas e Loader WebAssembly di tetris.js
+    ├── tetris.js                     # Loader WebAssembly di tetris.wasm e tetris.data 
+    ├── tetris.wasm                   # Engine di gioco compilato
+    ├── tetris.data                   # Asset di gioco 
+    ├── favicon.svg                   # Icona del sito
+    ├──.gitignore                     # File esclusi dal caricamento su github
+    └── README.md                     # Questo file
 ```
 
 ## 🏗️ Architettura Tecnica
@@ -150,6 +174,37 @@ Tetris/
 - **Touch Detection**: Auto-switch controlli desktop/mobile  
 - **Responsive Design**: CSS Grid e Flexbox
 - **Visual Feedback**: Animazioni CSS3 e transizioni
+
+## 🎯 Moduli CSS
+
+Ogni file CSS è dedicato a uno specifico aspetto dell'interfaccia:
+
+- **reset.css** - Reset CSS e stili base del body
+- **animations.css** - Tutte le animazioni (@keyframes) e particelle
+- **header.css** - Stili per header, titolo e sottotitolo
+- **layout.css** - Layout principale del gioco e wrapper
+- **panels.css** - Pannelli delle statistiche e informazioni
+- **canvas.css** - Stili per il canvas del gioco
+- **controls.css** - Pulsanti e controlli desktop
+- **menus.css** - Schermate di menu (start, pause, game over)
+- **mobile.css** - Stili specifici per dispositivi mobili
+- **responsive.css** - Media queries e design responsivo
+
+## 🎯 Moduli JavaScript
+
+Ogni file JS gestisce una funzionalità specifica:
+
+- **dom-elements.js** - Riferimenti agli elementi DOM
+- **emscripten-setup.js** - Configurazione del Module WebAssembly
+- **game-start.js** - Gestione avvio e caricamento del gioco
+- **stats-updater.js** - Aggiornamento delle statistiche in tempo reale
+- **ui-manager.js** - Gestione UI, layout e dimensioni canvas
+- **keyboard-controls.js** - Gestione input da tastiera
+- **game-over.js** - Logica schermata game over e record
+- **touch-controls.js** - Controlli touch e swipe per mobile
+- **audio-controls.js** - Gestione volume, mute e audio in background
+- **pause-system.js** - Sistema di pausa e visibility API
+- **init.js** - Inizializzazione dell'applicazione
 
 ## 🚀 Deploy su Vercel
 
@@ -288,9 +343,7 @@ sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev fonts-dejavu
 
 ```
 Tetris/
-├── tetris.c          # Versione C originale
-├── tetris.cpp        # Versione C++ moderna
-├── Makefile          # Build system per C
+├── tetris_web.cpp    # Versione C++ moderna
 ├── Makefile.cpp      # Build system per C++
 ├── README.md         # Questo file
 └── audio/

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    <title>🎮 Tetris Classic - Gioca Online Gratis</title>
+    <meta name="description" content="Gioca al classico Tetris online gratis! Tetris moderno in WebAssembly con grafica SDL2, audio e controlli perfetti.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta property="og:title" content="🎮 Tetris Classic - Gioca Online Gratis">
+    <meta property="og:description" content="Il leggendario puzzle game Tetris ora disponibile gratis nel browser!">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/panels.css">
+    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/menus.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+</body>
+    <!-- Particelle animate di sfondo -->
+    <div class="bg-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 3.5s;"></div>
+    </div>
+
+    <!-- Schermata iniziale con pulsante PLAY -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-content">
+            <h1 class="start-title">🎮 TETRIS</h1>
+            <p class="start-subtitle">Il Leggendario Puzzle Game</p>
+            
+            <div class="preview-blocks">
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+                <div class="preview-block"></div>
+            </div>
+            
+            <button class="play-button" id="playButton">
+                ▶️ GIOCA ORA
+            </button>
+            
+            <div class="start-instructions">
+                <p><strong>Come si gioca:</strong></p>
+                
+                <!-- Istruzioni per Desktop -->
+                <div class="desktop-instructions">
+                    <p>🖥️ <strong>Controlli Desktop:</strong><br>
+                    ⬅️➡️ Frecce per muovere • ⬆️ Ruota • ⬇️ Velocizza<br>
+                    ESC per pausa • Spazio per ricominciare</p>
+                </div>
+                
+                <!-- Istruzioni per Mobile -->
+                <div class="mobile-instructions">
+                    <p>📱 <strong>Controlli Touch:</strong><br>
+                    👆 Tap per ruotare<br>
+                    📲 Swipe ⬅️➡️ per muovere<br>
+                    📲 Swipe ⬇️ per velocizzare<br>
+                    ⏸️ Tieni premuto per mettere in pausa</p>
+                </div>
+                
+                <p class="game-goal">🎯 Completa le righe per guadagnare punti!<br></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Pause Menu -->
+    <div class="mobile-pause-menu" id="mobilePauseMenu">
+        <div class="mobile-pause-content">
+            <div class="mobile-pause-title">⏸️ PAUSA</div>
+            <div class="mobile-pause-buttons">
+                <button class="mobile-btn" id="resumeGameBtn">▶️ Riprendi</button>
+                <button class="mobile-btn" id="restartGameBtn">🔄 Ricomincia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Pause Menu -->
+    <div class="desktop-pause-menu" id="desktopPauseMenu">
+        <div class="desktop-pause-content">
+            <div class="desktop-pause-title">
+                ⏸️ GIOCO IN PAUSA
+            </div>
+            <div class="desktop-pause-subtitle">
+                Pronto a continuare la sfida?
+            </div>
+            
+            <!-- Statistiche attuali -->
+            <div class="desktop-pause-stats">
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Punteggio</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseScore">0</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Livello</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseLevel">1</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Linee</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseLines">0</span>
+                </div>
+                <div class="desktop-pause-stats-row">
+                    <span class="desktop-pause-stats-label">Tempo</span>
+                    <span class="desktop-pause-stats-value" id="desktopPauseTime">00:00</span>
+                </div>
+            </div>
+            
+            <div class="desktop-pause-buttons">
+                <button class="desktop-pause-btn" id="desktopResumeBtn">
+                    ▶️ Riprendi Gioco
+                </button>
+                <button class="desktop-pause-btn secondary" id="desktopRestartBtn">
+                    🔄 Ricomincia
+                </button>
+                <button class="desktop-pause-btn danger" id="desktopQuitBtn">
+                    🚪 Esci
+                </button>
+            </div>
+            
+            <div style="margin-top: 1.5rem; color: #78909c; font-size: 0.9rem;">
+                Premi <strong>ESC</strong> per riprendere velocemente
+            </div>
+        </div>
+    </div>
+
+    <!-- Nuova schermata Game Over unificata per Desktop e Mobile -->
+    <div class="gameover-overlay" id="gameOverOverlay">
+        <div class="gameover-background">
+            <!-- Particelle animate di sfondo -->
+            <div class="gameover-particles">
+                <div class="falling-block" style="left: 10%; animation-delay: 0s;"></div>
+                <div class="falling-block" style="left: 20%; animation-delay: 0.5s;"></div>
+                <div class="falling-block" style="left: 30%; animation-delay: 1s;"></div>
+                <div class="falling-block" style="left: 40%; animation-delay: 1.5s;"></div>
+                <div class="falling-block" style="left: 50%; animation-delay: 2s;"></div>
+                <div class="falling-block" style="left: 60%; animation-delay: 2.5s;"></div>
+                <div class="falling-block" style="left: 70%; animation-delay: 3s;"></div>
+                <div class="falling-block" style="left: 80%; animation-delay: 3.5s;"></div>
+                <div class="falling-block" style="left: 90%; animation-delay: 4s;"></div>
+            </div>
+        </div>
+        
+        <div class="gameover-content">
+            <!-- Titolo animato -->
+            <div class="gameover-title">
+                <span class="gameover-text">GAME</span>
+                <span class="gameover-text">OVER</span>
+            </div>
+            
+            <!-- Sottotitolo con emoji -->
+            <div class="gameover-subtitle" id="gameOverSubtitle">
+                🎮 Partita terminata
+            </div>
+            
+            <!-- Statistiche finali -->
+            <div class="gameover-stats">
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-label">Punteggio Finale</div>
+                        <div class="stat-number" id="gameOverFinalScore">0</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-label">Livello Raggiunto</div>
+                        <div class="stat-number" id="gameOverFinalLevel">1</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">📏</div>
+                        <div class="stat-label">Linee Completate</div>
+                        <div class="stat-number" id="gameOverFinalLines">0</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-label">Tempo Totale</div>
+                        <div class="stat-number" id="gameOverFinalTime">00:00</div>
+                    </div>
+                </div>
+                
+                <!-- Record personale -->
+                <div class="record-section" id="gameOverRecordSection">
+                    <div class="record-card" id="gameOverRecordCard">
+                        <div class="record-icon">👑</div>
+                        <div class="record-text">
+                            <div class="record-label">Record Personale</div>
+                            <div class="record-value" id="gameOverRecordValue">0</div>
+                        </div>
+                        <div class="record-badge" id="gameOverNewRecordBadge">NUOVO RECORD!</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messaggio motivazionale -->
+            <div class="gameover-message" id="gameOverMessage">
+                Ottimo lavoro! Riprova per battere il tuo record!
+            </div>
+            
+            <!-- Pulsanti di controllo -->
+            <div class="gameover-actions">
+                <button class="gameover-btn primary" id="gameOverRestartBtn">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Gioca Ancora</span>
+                </button>
+            </div>
+            
+            <!-- Istruzioni per mobile/desktop -->
+            <div class="gameover-instructions">
+                <div class="desktop-instruction">Premi <kbd>GiOCA ANCORA</kbd> per riavviare</div>
+                <div class="mobile-instruction">👆 Tocca "Gioca Ancora" per riavviare</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Game Over Overlay (mantenuto per compatibilità) -->
+    <div class="mobile-gameover-overlay legacy-mobile" id="mobileGameOverOverlay">
+        <div class="mobile-gameover-content">
+            <div class="mobile-gameover-title">GAME OVER</div>
+            <div class="mobile-gameover-score" id="mobileGameOverScore">Punteggio: 0</div>
+            <div class="mobile-gameover-instruction">👆 Tap per riavviare</div>
+        </div>
+    </div>
+
+    <!-- Loading overlay personalizzato -->
+    <div class="loading-overlay" id="customLoading">
+        <div class="tetris-loader">
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+            <div class="tetris-block"></div>
+        </div>
+        <div class="loading-text">TETRIS</div>
+        <div class="loading-progress" id="loadingProgress">Caricamento del gioco...</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 class="title">🎮 TETRIS</h1>
+        <p class="subtitle">Il Classico Puzzle Game</p>
+        <div class="game-info">
+            Gioca al leggendario Tetris direttamente nel browser! Versione moderna compilata in WebAssembly 
+            con grafica SDL2, audio coinvolgente e controlli reattivi. Nessun download richiesto.
+        </div>
+    </div>
+
+    <!-- Container del gioco -->
+    <div class="game-container">
+        <div class="game-wrapper">
+            <!-- Layout con statistiche sui lati -->
+            <div class="game-layout">
+                <!-- Statistiche a sinistra -->
+                <div class="left-stats">
+                    <div class="stats-panel">
+                        <h3 class="stats-title">📊 STATS</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Punteggio</span>
+                            <span class="stat-value" id="scoreDisplay">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Livello</span>
+                            <span class="stat-value" id="levelDisplay">1</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Linee</span>
+                            <span class="stat-value" id="linesDisplay">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas del gioco al centro -->
+                <div class="game-canvas">
+                    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+                </div>
+
+                <!-- Info aggiuntive a destra -->
+                <div class="right-info">
+                    <div class="info-panel">
+                        <h3 class="info-title">🎮 INFO</h3>
+                        <div class="info-item">
+                            <span class="info-label">Stato</span>
+                            <span class="info-value" id="gameState">Pronto</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Tempo</span>
+                            <span class="info-value" id="gameTime">00:00</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Record</span>
+                            <span class="info-value" id="highScore">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Controls / Controlli Audio -->
+                    <div class="info-panel audio-controls">
+                        <h3 class="info-title">🔊 AUDIO</h3>
+                        
+                        <div class="info-item volume-control">
+                            <span class="info-label">Volume</span>
+                            <div class="volume-slider-container">
+                                <input type="range" id="volume-slider" class="volume-slider" 
+                                       min="0" max="100" value="30" step="1">
+                                <span class="volume-value" id="volume-value">30</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mute-control">
+                            <button id="mute-button" class="mute-btn">
+                                <span class="mute-icon">🔊</span>
+                                <span class="mute-text">Mute</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controlli -->
+            <div class="controls desktop-only">
+                <div class="control-item">
+                    <div class="control-key">← →</div>
+                    <div class="control-desc">Movimento</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">↑</div>
+                    <div class="control-desc">Ruota</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">↓</div>
+                    <div class="control-desc">Caduta veloce</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">ESC</div>
+                    <div class="control-desc">Pausa</div>
+                </div>
+                <div class="control-item">
+                    <div class="control-key">INVIO</div>
+                    <div class="control-desc">Ricomincia</div>
+                </div>
+                <div class="control-item mobile-only">
+                    <div class="control-key">📱</div>
+                    <div class="control-desc">Touch/Swipe</div>
+                </div>
+            </div>
+            
+            <!-- Istruzioni Mobile -->
+            <div class="mobile-instructions">
+                <h3>📱 Controlli Touch</h3>
+                <div class="touch-controls">
+                    <div class="touch-item">
+                        <span class="touch-gesture">👆 Tap</span>
+                        <span class="touch-action">Ruota pezzo</span>
+                    </div>
+                    <div class="touch-item">
+                        <span class="touch-gesture">👈 👉 Swipe</span>
+                        <span class="touch-action">Muovi lateralmente</span>
+                    </div>
+                    <div class="touch-item">
+                        <span class="touch-gesture">👇 Swipe giù</span>
+                        <span class="touch-action">Caduta veloce</span>
+                    </div>
+                </div>
+                
+                <!-- Mobile Long Press Help Text -->
+                <div class="mobile-game-controls">
+                    <div class="mobile-help-text">Tieni premuto per menu pausa</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Creato con ❤️ utilizzando C++, SDL2 e WebAssembly</p>
+        <p>© 2025 - <a href="https://github.com/gianfrizio/Tetris" target="_blank">Codice sorgente su GitHub</a></p>
+    </div>
+
+    <!-- Script Emscripten (modificato) -->
+
+    <!-- JavaScript Modules (in dependency order) -->
+    <script src="js/dom-elements.js"></script>
+    <script src="js/emscripten-setup.js"></script>
+    <script src="js/game-start.js"></script>
+    <script src="js/stats-updater.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/keyboard-controls.js"></script>
+    <script src="js/game-over.js"></script>
+    <script src="js/touch-controls.js"></script>
+    <script src="js/audio-controls.js"></script>
+    <script src="js/pause-system.js"></script>
+    <script src="js/init.js"></script>
+    
+    <!-- WebAssembly Tetris Engine -->
+    <script async src="tetris.js"></script>
+</body>
+</html>

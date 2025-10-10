@@ -1,0 +1,849 @@
+/* ==================== MENUS (Start, Pause, GameOver) ==================== */
+        /* Schermata iniziale */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a40 50%, #2d1b69 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }
+
+        .start-screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .start-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .start-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3, #9c27b0);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 50px rgba(100, 255, 218, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .start-subtitle {
+            font-size: 1.5rem;
+            color: #b0bec5;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #64ffda, #2196f3);
+            border: none;
+            padding: 1.5rem 4rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f0f23;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 10px 30px rgba(100, 255, 218, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .play-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 20px 40px rgba(100, 255, 218, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .play-button:hover::before {
+            left: 100%;
+        }
+
+        .play-button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .start-instructions {
+            margin-top: 2rem;
+            color: #78909c;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: #233246b3;
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 2px solid #00ffaa;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Istruzioni specifiche per desktop */
+        .desktop-instructions {
+            background: rgba(30, 144, 255, 0.15);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #1e90ff;
+            margin: 0.8rem 0;
+        }
+        
+        .desktop-instructions p {
+            color: #87ceeb !important;
+            font-size: 0.95rem;
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        /* Istruzioni specifiche per mobile */
+        .mobile-instructions {
+            background: rgba(30, 144, 255, 0.15);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #1e90ff;
+            margin: 0.8rem 0;
+        }
+        
+        .mobile-instructions p {
+            color: #87ceeb !important;
+            font-size: 0.95rem;
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        /* Obiettivo del gioco */
+        .game-goal {
+            color: #00ff88 !important;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 1.2rem !important;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(0, 255, 136, 0.4);
+            font-size: 1.05rem;
+        }
+        
+        /* Mostra/nascondi istruzioni in base al dispositivo */
+        @media (max-width: 768px) {
+            .desktop-instructions {
+                display: none;
+            }
+            
+            .mobile-instructions {
+                display: block;
+            }
+            
+            .start-instructions {
+                margin-top: 1.5rem;
+                padding: 1rem;
+            }
+            
+            .mobile-instructions p {
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .desktop-instructions {
+                display: block;
+            }
+            
+            .mobile-instructions {
+                display: none;
+            }
+        }
+        
+        /* Tablet specifico */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .start-instructions {
+                padding: 1.5rem;
+            }
+            
+            .desktop-instructions p,
+            .mobile-instructions p {
+                font-size: 1rem;
+            }
+            
+            .game-goal {
+                font-size: 1.1rem;
+            }
+        }
+
+        .preview-blocks {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 2rem 0;
+            opacity: 0.7;
+        }
+
+        .preview-block {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            animation: blockPulse 2s ease-in-out infinite;
+        }
+
+        .preview-block:nth-child(1) { background: #64ffda; animation-delay: 0s; }
+        .preview-block:nth-child(2) { background: #2196f3; animation-delay: 0.3s; }
+        .preview-block:nth-child(3) { background: #9c27b0; animation-delay: 0.6s; }
+        .preview-block:nth-child(4) { background: #ff5722; animation-delay: 0.9s; }
+        .preview-block:nth-child(5) { background: #4caf50; animation-delay: 1.2s; }
+
+        @keyframes blockPulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Nascondi il gioco inizialmente */
+        .game-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .game-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Mobile Instructions */
+        .mobile-instructions {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .mobile-instructions h3 {
+            color: #64ffda;
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .touch-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .touch-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .touch-gesture {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #64ffda;
+        }
+
+        .touch-action {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        /* Mobile game control help text and menu */
+        .mobile-game-controls {
+            display: none;
+            justify-content: center;
+            margin-top: 1rem;
+            padding: 0 1rem;
+        }
+        
+        .mobile-help-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            color: rgba(100, 255, 218, 0.8);
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+        
+        /* Mobile Pause Menu */
+        .mobile-pause-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-pause-content {
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid #64ffda;
+            border-radius: 20px;
+            padding: 2rem;
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .mobile-pause-menu.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .mobile-pause-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #64ffda;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #64ffda;
+        }
+        
+        .mobile-pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .mobile-btn {
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f0f23;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
+            min-width: 120px;
+        }
+
+        .mobile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
+        }
+
+        .mobile-btn:active {
+            transform: translateY(0);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #ffb74d, #ff9800);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #81c784, #4caf50);
+        }
+
+        /* Mobile Game Over Overlay */
+        .mobile-gameover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 35, 0.98);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+        }
+        
+        /* Hide canvas on mobile when game over overlay is active */
+        @media (max-width: 768px) {
+            .mobile-gameover-overlay.active ~ * #canvas {
+                visibility: hidden !important;
+            }
+        }
+
+        .mobile-gameover-content {
+            text-align: center;
+            padding: 2rem;
+            max-width: 90%;
+        }
+
+        .mobile-gameover-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff5722;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+        }
+
+        .mobile-gameover-score {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #64ffda;
+            margin-bottom: 2rem;
+        }
+
+        .mobile-gameover-instruction {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Desktop-only elements (hidden on mobile) */
+        .desktop-only {
+            display: block;
+        }
+
+        /* Show mobile elements on small screens */
+        @media (max-width: 768px) {
+            .mobile-instructions {
+                display: block;
+            }
+            
+            .mobile-only {
+                display: flex;
+            }
+            
+            .desktop-only {
+                display: none !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
+            }
+            
+            .mobile-game-controls {
+                display: flex !important;
+            }
+        }
+
+        /* Desktop Pause Menu */
+        .desktop-pause-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .desktop-pause-content {
+            background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(26, 26, 64, 0.95));
+            backdrop-filter: blur(15px);
+            border: 3px solid #64ffda;
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            min-width: 400px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(100, 255, 218, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .desktop-pause-content::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #64ffda, #2196f3, #9c27b0, #64ffda);
+            border-radius: 27px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            background-size: 300% 300%;
+        }
+        
+        .desktop-pause-menu.active {
+            display: flex;
+            animation: fadeInScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .desktop-pause-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #64ffda, #00bcd4, #2196f3);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .desktop-pause-subtitle {
+            color: #b0bec5;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .desktop-pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+        
+        .desktop-pause-btn {
+            background: linear-gradient(135deg, #64ffda, #2196f3);
+            border: none;
+            padding: 1rem 2rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f0f23;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 8px 25px rgba(100, 255, 218, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 200px;
+        }
+        
+        .desktop-pause-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .desktop-pause-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 12px 35px rgba(100, 255, 218, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .desktop-pause-btn:hover::before {
+            left: 100%;
+        }
+        
+        .desktop-pause-btn:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+        
+        .desktop-pause-btn.secondary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            color: #64ffda;
+            border: 2px solid #64ffda;
+            box-shadow: 
+                0 8px 25px rgba(100, 255, 218, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .desktop-pause-btn.secondary:hover {
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.2), rgba(100, 255, 218, 0.1));
+            color: #ffffff;
+            box-shadow: 
+                0 12px 35px rgba(100, 255, 218, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .desktop-pause-btn.danger {
+            background: linear-gradient(135deg, #ff5722, #e64a19);
+            color: #ffffff;
+        }
+        
+        .desktop-pause-btn.danger:hover {
+            background: linear-gradient(135deg, #ff6f47, #ff5722);
+            box-shadow: 
+                0 12px 35px rgba(255, 87, 34, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .desktop-pause-stats {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .desktop-pause-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+        
+        .desktop-pause-stats-label {
+            color: #b0bec5;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .desktop-pause-stats-value {
+            color: #64ffda;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* ==================== MEDIA QUERIES PER MENU DI PAUSA ==================== */
+        
+        /* Menu di pausa - Tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .desktop-pause-content {
+                min-width: 350px;
+                max-width: 450px;
+                padding: 2.5rem 2rem;
+            }
+            
+            .desktop-pause-title {
+                font-size: 2rem;
+            }
+            
+            .desktop-pause-btn {
+                min-width: 180px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Tablet adjustments: center box contents similar to mobile but with slightly larger spacing */
+        @media only screen and (min-width: 429px) and (max-width: 1024px) {
+            .stat-card, .stat-item, .info-item, .info-panel, .record-card {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                gap: 0.5rem !important;
+            }
+
+            .stat-item, .info-item {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .stat-label, .info-label { text-align: center !important; margin-bottom: 0.4rem !important; }
+            .stat-number, .info-value, .record-value { text-align: center !important; }
+
+            /* Slightly increase paddings on tablets */
+            .gameover-content { padding: 1.4rem; }
+            .gameover-title { font-size: clamp(2rem, 6vw, 3rem); }
+            .gameover-btn { padding: 0.85rem 1.1rem; }
+        }
+        
+        /* Menu di pausa mobile - Large */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .mobile-pause-content {
+                min-width: 280px;
+                padding: 2.5rem;
+            }
+            
+            .mobile-pause-title {
+                font-size: 1.8rem;
+            }
+            
+            .mobile-btn {
+                min-width: 150px;
+                font-size: 1.1rem;
+                padding: 1rem 1.8rem;
+            }
+        }
+        
+        /* Menu di pausa mobile - Small */
+        @media (max-width: 480px) {
+            .mobile-pause-content {
+                min-width: 250px;
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .mobile-pause-title {
+                font-size: 1.6rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .mobile-btn {
+                min-width: 140px;
+                font-size: 1rem;
+                padding: 0.9rem 1.5rem;
+            }
+        }
+        
+        /* Menu di pausa mobile - Extra Small */
+        @media (max-width: 360px) {
+            .mobile-pause-content {
+                min-width: 220px;
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+            
+            .mobile-pause-title {
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+            
+            .mobile-btn {
+                min-width: 120px;
+                font-size: 0.9rem;
+                padding: 0.8rem 1.2rem;
+            }
+        }
+        
+        /* ==================== MEDIA QUERIES PER MENU DI PAUSA ==================== */
+        
+        /* Menu di pausa - Tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .desktop-pause-content {
+                min-width: 350px;
+                max-width: 450px;
+                padding: 2.5rem 2rem;
+            }
+            
+            .desktop-pause-title {
+                font-size: 2rem;
+            }
+            
+            .desktop-pause-btn {
+                min-width: 180px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Menu di pausa mobile - Large */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .mobile-pause-content {
+                min-width: 280px;
+                padding: 2.5rem;
+            }
+            
+            .mobile-pause-title {
+                font-size: 1.8rem;
+            }
+            
+            .mobile-btn {
+                min-width: 150px;
+                font-size: 1.1rem;
+                padding: 1rem 1.8rem;
+            }
+        }
+        
+        /* Menu di pausa mobile - Small */
+        @media (max-width: 480px) {
+            .mobile-pause-content {
+                min-width: 250px;
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .mobile-pause-title {
+                font-size: 1.6rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            .mobile-btn {
+                min-width: 140px;
+                font-size: 1rem;
+                padding: 0.9rem 1.5rem;
+            }
+        }
+        
+        /* Menu di pausa mobile - Extra Small */
+        @media (max-width: 360px) {
+            .mobile-pause-content {
+                min-width: 220px;
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+        }

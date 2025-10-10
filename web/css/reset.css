@@ -1,0 +1,14 @@
+/* Reset base e body */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a40 50%, #2d1b69 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
