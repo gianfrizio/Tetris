@@ -50,7 +50,7 @@ Un'implementazione moderna del classico gioco Tetris in C++ compilata per il web
 
 ## 🚀 Demo Live
 
-**Gioca subito:** [Tetris Web Demo]t(https://tetris-pi-mocha.vercel.app/)
+**Gioca subito:**(https://tetris-pi-mocha.vercel.app/)
 
 ## 📋 Controlli
 
