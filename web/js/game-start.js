@@ -146,17 +146,23 @@
                     }
                 }
                 // Se il C++ non è running e non è paused, probabilmente è game over
+                // MA aspetta almeno 2 secondi dall'inizio del gioco prima di rilevare game over (grace period per inizializzazione)
                 else if (!cppRunning && !cppPaused && gameStartTimeReal && !isGameOver) {
-                    console.log('🎮 C++ game over detected, syncing JavaScript');
-                    isGameOver = true;
-                    isTimerRunning = false;
-                    isPaused = false;
-                    gameEndTime = Date.now();
-                    
-                    const gameStateElement = document.getElementById('gameState');
-                    if (gameStateElement) {
-                        gameStateElement.textContent = 'Game Over';
-                        gameStateElement.style.color = '#ff5722';
+                    const timeSinceGameStart = Date.now() - gameStartTimeReal;
+                    if (timeSinceGameStart > 2000) {
+                        console.log('🎮 C++ game over detected, syncing JavaScript');
+                        isGameOver = true;
+                        isTimerRunning = false;
+                        isPaused = false;
+                        gameEndTime = Date.now();
+
+                        const gameStateElement = document.getElementById('gameState');
+                        if (gameStateElement) {
+                            gameStateElement.textContent = 'Game Over';
+                            gameStateElement.style.color = '#ff5722';
+                        }
+                    } else {
+                        console.log('⏳ C++ not ready yet, waiting... (', timeSinceGameStart, 'ms since start)');
                     }
                 }
                 

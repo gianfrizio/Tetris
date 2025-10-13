@@ -3044,6 +3044,29 @@
                 order: 2 !important;
             }
 
+            /* Inverti ordine stats su mobile: Punteggio più vicino al canvas */
+            .stats-panel {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            /* Ordine su mobile: Titolo → Linee → Livello → Punteggio (più vicino al canvas) */
+            .stats-panel h3 { /* Titolo resta in cima */
+                order: 1 !important;
+            }
+
+            .stats-panel .stat-item:nth-child(2) { /* Punteggio - va in fondo (più vicino canvas) */
+                order: 4 !important;
+            }
+
+            .stats-panel .stat-item:nth-child(3) { /* Livello - resta al centro */
+                order: 3 !important;
+            }
+
+            .stats-panel .stat-item:nth-child(4) { /* Linee - va dopo il titolo */
+                order: 2 !important;
+            }
+
             /* Adjust panel styles for mobile */
             .info-panel, .stats-panel {
                 padding: 0.8rem !important;
