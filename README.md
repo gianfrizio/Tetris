@@ -135,6 +135,7 @@ Tetris/
     ├── js/                       # Moduli JavaScript 
     │       ├── dom-elements.js           # Riferimenti DOM
     │       ├── emscripten-setup.js       # Setup WebAssembly Module
+    |       ├── function-declarations     # Dichiarazioni delle funzioni
     │       ├── game-start.js             # Logica avvio gioco
     │       ├── stats-updater.js          # Aggiornamento statistiche
     │       ├── ui-manager.js             # Gestione UI e layout
@@ -197,6 +198,7 @@ Ogni file JS gestisce una funzionalità specifica:
 - **dom-elements.js** - Riferimenti agli elementi DOM
 - **emscripten-setup.js** - Configurazione del Module WebAssembly
 - **game-start.js** - Gestione avvio e caricamento del gioco
+- **function-declarations.js** - File contenente le dichiarazioni delle funzioni
 - **stats-updater.js** - Aggiornamento delle statistiche in tempo reale
 - **ui-manager.js** - Gestione UI, layout e dimensioni canvas
 - **keyboard-controls.js** - Gestione input da tastiera
