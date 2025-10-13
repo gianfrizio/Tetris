@@ -86,7 +86,7 @@
         let longPressTimer = null;
         let longPressTriggered = false;
         let touchMoved = false;
-        let mobilePauseActive = false; // Track mobile pause state
+        // NOTA: mobilePauseActive è dichiarato in dom-elements.js
         // Anti-accidental-open guards
         let recentTapCount = 0;           // number of quick taps in a short burst
         let tapBurstResetTimer = null;   // timer to reset recentTapCount

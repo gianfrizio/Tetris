@@ -17,24 +17,14 @@
         customLoading.style.transition = 'opacity 0.5s ease-in-out';
         
         // Sistema di aggiornamento statistiche del gioco
+        // NOTA: Le variabili globali sono dichiarate in dom-elements.js
         let statsUpdateInterval;
-        let lastScore = 0;
-        let lastLevel = 1;
-        let lastLines = 0;
-        let gameStartTimeReal = null;
-        let highScore = localStorage.getItem('tetris-high-score') || 0;
-        let isGameOver = false;
-        let gameEndTime = null;
         let lastRunningState = true;
         let gameStoppedTime = null;
         let lastScoreCheck = 0;
         let scoreStuckCount = 0;
-        let totalPausedTime = 0;
-        let pauseStartTime = null;
         let lastGameRunningState = true;
         let isManuallyPaused = false;
-        let isTimerRunning = true;
-        let lastScoreChangeTime = Date.now();
         
         function startStatsUpdater() {
             console.log('Starting stats updater...');

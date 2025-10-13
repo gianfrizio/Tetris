@@ -11,14 +11,22 @@
             // Ignore synthetic (programmatically-dispatched) keyboard events so
             // simulateKeyPress() (which dispatches events to the canvas) doesn't
             // bubble up and trigger the JS handlers again, causing double toggles.
-            if (!event.isTrusted) {
+            // EXCEPTION: Allow synthetic ESC events for pause menu resume functionality
+            const isEscKey = event.key === 'Escape' || event.code === 'Escape';
+            if (!event.isTrusted && !isEscKey) {
                 console.log('Ignoring synthetic key event:', event.key);
+                return;
+            }
+
+            // If it's a synthetic ESC, it's for the C++ game only - don't handle in JS
+            if (!event.isTrusted && isEscKey) {
+                console.log('✅ Allowing synthetic ESC event for C++ game control (skipping JS menu logic)');
+                // Return here - let C++ handle it, but don't process menu logic in JS
                 return;
             }
 
             // For ESC key, we want to handle it even if canvas has focus
             // to ensure menu system works properly
-            const isEscKey = event.key === 'Escape' || event.code === 'Escape';
             
             // Also ignore events whose target is the canvas element, EXCEPT for ESC
             // key events are dispatched directly to the canvas and should be

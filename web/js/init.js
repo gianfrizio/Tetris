@@ -48,25 +48,37 @@
                 resumeBtn.addEventListener('click', () => {
                     console.log('📱 Resume clicked');
                     hideMobilePauseMenu();
-                    
+
                     // Resume both JavaScript AND C++ game
                     setTimeout(() => {
-                        if (isPaused) {
-                            console.log('📱 Resuming JavaScript state first');
-                            forceResume('mobile');
-                            
-                            // Now resume C++ game engine (only once!)
+                        console.log('📱 Resuming JavaScript state');
+                        forceResume('mobile');
+
+                        // Now resume C++ game engine
+                        setTimeout(() => {
+                            try {
+                                if (typeof Module !== 'undefined') {
+                                    // Check if game is actually paused in C++
+                                    const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                                    console.log('📱 C++ pause state:', cppPaused);
+
+                                    if (cppPaused) {
+                                        console.log('📱 Sending ESC to unpause C++ game');
+                                        simulateKeyPress('Escape');
+                                    } else {
+                                        console.log('📱 C++ game already running');
+                                    }
+                                }
+                            } catch(e) {
+                                console.error('Error resuming C++ game:', e);
+                            }
+
+                            // Ensure body has focus
                             setTimeout(() => {
-                                console.log('📱 Resuming C++ game engine');
-                                simulateKeyPress('Escape', { restoreFocus: true });
-                                
-                                // Ensure body has focus for future menu interactions
-                                setTimeout(() => {
-                                    document.body.focus();
-                                    console.log('🎯 Focus restored to body for mobile');
-                                }, 100);
-                            }, 50);
-                        }
+                                document.body.focus();
+                                console.log('🎯 Focus restored to body for mobile');
+                            }, 100);
+                        }, 50);
                     }, 100);
                 });
             }
@@ -80,29 +92,54 @@
                 desktopResumeBtn.addEventListener('click', () => {
                     console.log('🖥️ Desktop resume clicked');
                     hideDesktopPauseMenu();
-                    
+
                     setTimeout(() => {
-                        if (isPaused) {
-                            forceResume('desktop');
-                            
-                            setTimeout(() => {
-                                try {
-                                    if (typeof Module !== 'undefined' && Module._isGamePaused && Module._isGamePaused()) {
-                                        // Don't let canvas keep focus after resume
-                                        simulateKeyPress('Escape', { restoreFocus: true });
+                        console.log('🖥️ Resuming JavaScript state');
+                        forceResume('desktop');
+
+                        setTimeout(() => {
+                            try {
+                                if (typeof Module !== 'undefined') {
+                                    // Check if game is actually paused in C++
+                                    const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                                    const cppRunning = Module._isGameRunning ? Module._isGameRunning() : false;
+                                    console.log('🖥️ C++ state - Paused:', cppPaused, 'Running:', cppRunning);
+
+                                    if (cppPaused && cppRunning) {
+                                        // Normal case: game is paused but running
+                                        console.log('🖥️ Sending ESC to unpause C++ game');
+                                        simulateKeyPress('Escape');
                                         console.log('🎮 C++ game resumed from desktop menu');
-                                        
-                                        // Ensure document.body has focus for future ESC events
+                                    } else if (cppPaused && !cppRunning) {
+                                        // Special case: game is paused but not running (ESC stopped it completely)
+                                        console.log('🖥️ C++ game paused but not running - trying to resume with ESC');
+                                        simulateKeyPress('Escape');
+
+                                        // Verify if it worked after 200ms
                                         setTimeout(() => {
-                                            document.body.focus();
-                                            console.log('🎯 Focus restored to body for future menu access');
-                                        }, 100);
+                                            const stillNotRunning = Module._isGameRunning ? !Module._isGameRunning() : true;
+                                            if (stillNotRunning) {
+                                                console.log('⚠️ ESC did not resume - game might need full restart');
+                                            } else {
+                                                console.log('✅ C++ game successfully resumed');
+                                            }
+                                        }, 200);
+                                    } else if (!cppPaused && cppRunning) {
+                                        console.log('🖥️ C++ game already running');
+                                    } else {
+                                        console.warn('⚠️ C++ game in unknown state - paused:', cppPaused, 'running:', cppRunning);
                                     }
-                                } catch(e) {
-                                    console.log('Error resuming C++ game:', e);
                                 }
-                            }, 50);
-                        }
+                            } catch(e) {
+                                console.error('Error resuming C++ game:', e);
+                            }
+
+                            // Ensure document.body has focus for future ESC events
+                            setTimeout(() => {
+                                document.body.focus();
+                                console.log('🎯 Focus restored to body for future menu access');
+                            }, 100);
+                        }, 50);
                     }, 100);
                 });
             }

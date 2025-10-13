@@ -396,16 +396,17 @@
 
     <!-- JavaScript Modules (in dependency order) -->
     <script src="js/dom-elements.js"></script>
-    <script src="js/emscripten-setup.js"></script>
+    <script src="js/function-declarations.js"></script>  <!-- Function placeholders -->
+    <script src="js/ui-manager.js"></script>              <!-- Defines: startGameTimer, pauseTimer, etc. -->
+    <script src="js/pause-system.js"></script>            <!-- Defines: addGameOverKeyboardListeners, restartFromGameOver, startGameOverMonitoring -->
+    <script src="js/audio-controls.js"></script>          <!-- Defines: showNewGameOver, hideNewGameOver, etc. (uses pause-system functions) -->
+    <script src="js/emscripten-setup.js"></script>        <!-- Uses: startGameTimer -->
     <script src="js/game-start.js"></script>
-    <script src="js/stats-updater.js"></script>
-    <script src="js/ui-manager.js"></script>
+    <script src="js/stats-updater.js"></script>           <!-- Uses: showNewGameOver -->
     <script src="js/keyboard-controls.js"></script>
     <script src="js/game-over.js"></script>
     <script src="js/touch-controls.js"></script>
-    <script src="js/audio-controls.js"></script>
-    <script src="js/pause-system.js"></script>
-    <script src="js/init.js"></script>
+    <script src="js/init.js"></script>                     <!-- Last: initializes everything (uses restartFromGameOver) -->
     
     <!-- WebAssembly Tetris Engine -->
     <script async src="tetris.js"></script>

@@ -1,7 +1,7 @@
-// ==================== EMSCRIPTEN MODULE SETUP ==================== 
+// ==================== EMSCRIPTEN MODULE SETUP ====================
 
+    // NOTA: gameStartRequested è dichiarato in dom-elements.js
     let gameStarted = false;
-    let gameStartRequested = false;
         
         // Nascondi il loading inizialmente
         customLoading.style.display = 'none';
@@ -87,10 +87,14 @@
                                     Module._startTetrisGame();
                                     gameStarted = true;
                                     console.log('Game started via C++ function!');
-                                    
+
                                     // Avvia il timer JavaScript
-                                    window.startGameTimer();
-                                    
+                                    if (typeof window.startGameTimer === 'function') {
+                                        window.startGameTimer();
+                                    } else {
+                                        console.warn('startGameTimer not available yet');
+                                    }
+
                                     // Avvia l'aggiornamento delle statistiche
                                     startStatsUpdater();
                                 } else {
@@ -101,10 +105,14 @@
                                             Module._startTetrisGame();
                                             gameStarted = true;
                                             console.log('Game started via C++ function (retry)!');
-                                            
+
                                             // Avvia il timer JavaScript
-                                            window.startGameTimer();
-                                            
+                                            if (typeof window.startGameTimer === 'function') {
+                                                window.startGameTimer();
+                                            } else {
+                                                console.warn('startGameTimer not available yet');
+                                            }
+
                                             // Avvia l'aggiornamento delle statistiche
                                             startStatsUpdater();
                                         }

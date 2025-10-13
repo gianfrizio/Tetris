@@ -1,30 +1,32 @@
-// ==================== GAME OVER HANDLING ==================== 
+// ==================== GAME OVER HANDLING ====================
 
 document.addEventListener('keydown', (event) => {
+    // ENTER key handling for restart
+    if (event.key === 'Enter' || event.code === 'Enter') {
+        if (lastScore > 0) {
+            console.log('🔍 ENTER pressed during game, triggering game over first');
+            stopTimer();
 
-                if (lastScore > 0) {
-                    console.log('🔍 ENTER pressed during game, triggering game over first');
-                    stopTimer();
-                    
-                    // Poi riavvia dopo un breve delay
-                    setTimeout(() => {
-                        console.log('🔄 Auto-restarting after ENTER');
-                        restartTimer();
-                    }, 500);
-                } else {
-                    // Punteggio 0, probabilmente nuovo gioco
-                    console.log('🆕 ENTER pressed with score 0, ensuring timer is active');
-                    if (!isTimerRunning) {
-                        restartTimer();
-                    }
-                }
-            
-            // Per test: Ctrl+G per trigger game over
-            if (event.ctrlKey && event.key === 'g') {
-                console.log('Manual game over triggered');
-                stopTimer();
+            // Poi riavvia dopo un breve delay
+            setTimeout(() => {
+                console.log('🔄 Auto-restarting after ENTER');
+                restartTimer();
+            }, 500);
+        } else {
+            // Punteggio 0, probabilmente nuovo gioco
+            console.log('🆕 ENTER pressed with score 0, ensuring timer is active');
+            if (!isTimerRunning) {
+                restartTimer();
             }
-        });
+        }
+    }
+
+    // Per test: Ctrl+G per trigger game over
+    if (event.ctrlKey && event.key === 'g') {
+        console.log('Manual game over triggered');
+        stopTimer();
+    }
+});
         
         // Funzione per riavviare il timer per una nuova partita
         function restartTimer() {
