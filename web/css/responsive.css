@@ -301,7 +301,15 @@
                 margin-bottom: 1rem;
                 margin-top: 1rem;
             }
-            
+
+            /* Forza tutti gli info-item ad avere la stessa larghezza */
+            .info-item, .volume-control, .mute-control {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
             .volume-control {
                 padding: 1rem;
             }
@@ -333,7 +341,10 @@
             .mute-btn {
                 padding: 1rem 2rem;
                 font-size: 1rem;
-                min-width: 120px;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                justify-content: center !important;
             }
             
             .mute-icon {
