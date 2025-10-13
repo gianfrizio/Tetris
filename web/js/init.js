@@ -86,7 +86,6 @@
             // Desktop pause menu event listeners
             const desktopResumeBtn = document.getElementById('desktopResumeBtn');
             const desktopRestartBtn = document.getElementById('desktopRestartBtn');
-            const desktopQuitBtn = document.getElementById('desktopQuitBtn');
             
             if (desktopResumeBtn) {
                 desktopResumeBtn.addEventListener('click', () => {
@@ -148,44 +147,12 @@
                 desktopRestartBtn.addEventListener('click', () => {
                     console.log('🖥️ Desktop restart clicked');
                     hideDesktopPauseMenu();
-                    
+
                     setTimeout(() => {
                         resetGameInfo();
                         simulateKeyPress('Enter');
                         console.log('🎮 Game restarted from desktop menu');
                     }, 100);
-                });
-            }
-            
-            if (desktopQuitBtn) {
-                desktopQuitBtn.addEventListener('click', () => {
-                    console.log('🖥️ Desktop quit clicked');
-                    hideDesktopPauseMenu();
-                    
-                    // Show confirmation dialog
-                    if (confirm('Sei sicuro di voler uscire dal gioco? Il progresso andrà perso.')) {
-                        // Stop the game and return to start screen
-                        stopTimer();
-                        
-                        setTimeout(() => {
-                            // Hide game container and show start screen
-                            const gameContainer = document.querySelector('.game-container');
-                            const startScreen = document.getElementById('startScreen');
-                            
-                            if (gameContainer) gameContainer.classList.remove('visible');
-                            if (startScreen) {
-                                startScreen.classList.remove('hidden');
-                                startScreen.style.display = 'flex';
-                            }
-                            
-                            // Reset game state
-                            gameStartRequested = false;
-                            console.log('🚪 Returned to start screen');
-                        }, 500);
-                    } else {
-                        // User cancelled, show menu again
-                        showDesktopPauseMenu();
-                    }
                 });
             }
             
