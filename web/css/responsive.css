@@ -2840,3 +2840,94 @@
         #status {
             display: none !important;
         }
+
+        /* ==================== MOBILE LAYOUT FIX ==================== */
+
+        /* Mobile: Stack game layout vertically instead of horizontally */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 0.5rem;
+            }
+
+            .game-wrapper {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 15px;
+            }
+
+            /* Show mobile instructions on mobile */
+            .mobile-instructions {
+                display: block !important;
+            }
+
+            /* Change from horizontal (row) to vertical (column) layout */
+            .game-layout {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 1rem !important;
+            }
+
+            /* Side panels become full-width on mobile */
+            .left-stats, .right-info {
+                flex: none !important;
+                width: 100% !important;
+                max-width: 360px !important;
+            }
+
+            /* Canvas container stays centered */
+            .game-canvas {
+                order: 1 !important;
+                width: 100% !important;
+                max-width: 360px !important;
+            }
+
+            /* Left stats go above canvas */
+            .left-stats {
+                order: 0 !important;
+            }
+
+            /* Right info goes below canvas */
+            .right-info {
+                order: 2 !important;
+            }
+
+            /* Adjust panel styles for mobile */
+            .info-panel, .stats-panel {
+                padding: 0.8rem !important;
+                margin-bottom: 0.8rem !important;
+            }
+
+            /* Make text more readable on mobile */
+            .panel-title {
+                font-size: 1rem !important;
+            }
+
+            .stat-value, .info-value {
+                font-size: 1.3rem !important;
+            }
+
+            .stat-label, .info-label {
+                font-size: 0.85rem !important;
+            }
+        }
+
+        /* Extra small mobile devices */
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 0.25rem;
+            }
+
+            .game-wrapper {
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .left-stats, .right-info, .game-canvas {
+                max-width: 100% !important;
+            }
+
+            .info-panel, .stats-panel {
+                padding: 0.6rem !important;
+                margin-bottom: 0.6rem !important;
+            }
+        }

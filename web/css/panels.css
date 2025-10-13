@@ -26,9 +26,20 @@
         .right-info .info-panel:nth-child(1) {
             order: 1;
         }
-        
+
         .right-info .info-panel:nth-child(2) {
             order: 2;
+        }
+
+        /* Mobile: inverti l'ordine - audio sopra info */
+        @media (max-width: 768px) {
+            .right-info .info-panel:nth-child(1) {
+                order: 2 !important;
+            }
+
+            .right-info .info-panel:nth-child(2) {
+                order: 1 !important;
+            }
         }
         
         /* Controllo specifico per pannelli nella colonna destra */
