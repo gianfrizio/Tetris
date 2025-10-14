@@ -16,46 +16,52 @@
                     const cppPaused = Module._isGamePaused();
                     
                     // Rileva game over: non running e non paused
+                    // MA aspetta almeno 3 secondi dall'inizio del gioco (grace period per iPhone)
                     if (!cppRunning && !cppPaused && !isGameOver && gameStartTimeReal) {
-                        console.log('🎮 GAME OVER detected - syncing state');
-                        isGameOver = true;
-                        isTimerRunning = false;
-                        isPaused = false;
-                        if (!gameEndTime) {
-                            gameEndTime = Date.now();
-                            
-                            // Se eravamo in pausa, calcola il tempo di pausa finale
-                            if (pauseStartTime) {
-                                totalPausedTime += gameEndTime - pauseStartTime;
-                                pauseStartTime = null;
-                            }
-                            
-                            console.log('⏰ Timer stopped at game over:', new Date(gameEndTime).toLocaleTimeString());
-                            
-                            // Mostra la nuova schermata game over se non è già attiva
-                            if (!newGameOverActive) {
-                                // Ottieni le statistiche finali
-                                let finalScore = lastScore;
-                                let finalLevel = lastLevel || 1;
-                                let finalLines = lastLines || 0;
-                                
-                                try {
-                                    if (typeof Module !== 'undefined') {
-                                        if (Module._getScore) finalScore = Module._getScore();
-                                        if (Module._getLevel) finalLevel = Module._getLevel();
-                                        if (Module._getLines) finalLines = Module._getLines();
-                                    }
-                                } catch(e) {
-                                    console.log('Error getting stats for game over sync:', e);
+                        const timeSinceGameStart = Date.now() - gameStartTimeReal;
+                        if (timeSinceGameStart > 3000) {
+                            console.log('🎮 GAME OVER detected - syncing state (after', timeSinceGameStart, 'ms)');
+                            isGameOver = true;
+                            isTimerRunning = false;
+                            isPaused = false;
+                            if (!gameEndTime) {
+                                gameEndTime = Date.now();
+
+                                // Se eravamo in pausa, calcola il tempo di pausa finale
+                                if (pauseStartTime) {
+                                    totalPausedTime += gameEndTime - pauseStartTime;
+                                    pauseStartTime = null;
                                 }
-                                
-                                const gameTime = document.getElementById('gameTime')?.textContent?.replace(' (FINAL)', '').replace(' (PAUSA)', '') || '00:00';
-                                
-                                console.log('🎮 Triggering game over from state sync');
-                                setTimeout(() => {
-                                    showNewGameOver(finalScore, finalLevel, finalLines, gameTime);
-                                }, 500); // Small delay to ensure all state is settled
+
+                                console.log('⏰ Timer stopped at game over:', new Date(gameEndTime).toLocaleTimeString());
+
+                                // Mostra la nuova schermata game over se non è già attiva
+                                if (!newGameOverActive) {
+                                    // Ottieni le statistiche finali
+                                    let finalScore = lastScore;
+                                    let finalLevel = lastLevel || 1;
+                                    let finalLines = lastLines || 0;
+
+                                    try {
+                                        if (typeof Module !== 'undefined') {
+                                            if (Module._getScore) finalScore = Module._getScore();
+                                            if (Module._getLevel) finalLevel = Module._getLevel();
+                                            if (Module._getLines) finalLines = Module._getLines();
+                                        }
+                                    } catch(e) {
+                                        console.log('Error getting stats for game over sync:', e);
+                                    }
+
+                                    const gameTime = document.getElementById('gameTime')?.textContent?.replace(' (FINAL)', '').replace(' (PAUSA)', '') || '00:00';
+
+                                    console.log('🎮 Triggering game over from state sync');
+                                    setTimeout(() => {
+                                        showNewGameOver(finalScore, finalLevel, finalLines, gameTime);
+                                    }, 500); // Small delay to ensure all state is settled
+                                }
                             }
+                        } else {
+                            console.log('⏳ C++ not ready yet, waiting for initialization... (', timeSinceGameStart, 'ms since start)');
                         }
                     }
                     // Rileva pausa

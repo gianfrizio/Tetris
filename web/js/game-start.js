@@ -146,10 +146,10 @@
                     }
                 }
                 // Se il C++ non è running e non è paused, probabilmente è game over
-                // MA aspetta almeno 2 secondi dall'inizio del gioco prima di rilevare game over (grace period per inizializzazione)
+                // MA aspetta almeno 3 secondi dall'inizio del gioco prima di rilevare game over (grace period per inizializzazione iPhone)
                 else if (!cppRunning && !cppPaused && gameStartTimeReal && !isGameOver) {
                     const timeSinceGameStart = Date.now() - gameStartTimeReal;
-                    if (timeSinceGameStart > 2000) {
+                    if (timeSinceGameStart > 3000) {
                         console.log('🎮 C++ game over detected, syncing JavaScript');
                         isGameOver = true;
                         isTimerRunning = false;
