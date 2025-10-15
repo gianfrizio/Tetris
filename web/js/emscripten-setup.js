@@ -76,21 +76,19 @@
                         // Fit canvas to viewport
                         fitCanvasToViewport();
 
-                        // Su mobile, scrolla automaticamente alla board di gioco IMMEDIATAMENTE
-                        if (window.innerWidth <= 768) {
-                            setTimeout(() => {
-                                const canvas = document.getElementById('canvas');
-                                if (canvas) {
-                                    // Scroll istantaneo per mostrare subito la board
-                                    canvas.scrollIntoView({
-                                        behavior: 'auto',
-                                        block: 'center',
-                                        inline: 'center'
-                                    });
-                                    console.log('📱 Auto-scrolled to canvas on mobile');
-                                }
-                            }, 50);
-                        }
+                        // Scrolla automaticamente alla board di gioco IMMEDIATAMENTE (mobile e desktop)
+                        setTimeout(() => {
+                            const canvas = document.getElementById('canvas');
+                            if (canvas) {
+                                // Scroll istantaneo per mostrare subito la board centrata
+                                canvas.scrollIntoView({
+                                    behavior: 'auto',
+                                    block: 'center',
+                                    inline: 'center'
+                                });
+                                console.log('🎮 Auto-scrolled to canvas');
+                            }
+                        }, 50);
 
                         // Avvia il gioco chiamando la funzione C++
                         let gameStarted = false;
