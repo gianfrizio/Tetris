@@ -95,9 +95,9 @@
                     }
                 }
                 
-                // QUARTA: Sincronizza con lo stato del C++
+                // QUARTA: Sincronizza con lo stato del C++ (questa chiama showNewGameOver quando necessario)
                 syncGameStateWithCpp();
-                
+
                 // QUINTA: Aggiorna il display dello stato
                 updateGameState();
                 
@@ -172,44 +172,10 @@
         }
         
         function checkForGameOver() {
-            if (isGameOver || !isTimerRunning) return; // Se già in game over o in pausa, non controllare
-            
-            // Metodo 1: Rileva se il punteggio non cambia per molto tempo e il gioco sembra fermo
-            const currentTime = Date.now();
-            
-            // Se il punteggio è cambiato, aggiorna il timestamp
-            if (lastScore !== lastScoreCheck) {
-                lastScoreChangeTime = currentTime;
-                lastScoreCheck = lastScore;
-                scoreStuckCount = 0;
-                return;
-            }
-            
-            // Se il punteggio è > 0 e non cambia da più di 3 secondi, è game over
-            if (lastScore > 0 && (currentTime - lastScoreChangeTime) > 3000) {
-                console.log('� GAME OVER AUTO-DETECTED! Score stuck for 3+ seconds with score:', lastScore);
-                stopTimer();
-                return;
-            }
-            
-            // Metodo alternativo: conta i cicli di controllo
-            scoreStuckCount++;
-            if (lastScore > 0 && scoreStuckCount > 30) { // 30 * 100ms = 3 secondi
-                console.log('💀 GAME OVER AUTO-DETECTED! Score stuck counter reached:', scoreStuckCount);
-                stopTimer();
-            }
-            
-            // Metodo 2: Rileva pattern di game over tramite eventi DOM o canvas
-            // Questo potrebbe essere migliorato osservando il canvas per messaggi di game over
-            try {
-                const canvas = document.getElementById('canvas');
-                if (canvas) {
-                    // Qui potremmo analizzare il contenuto del canvas per cercare testo "GAME OVER"
-                    // Per ora usiamo solo il metodo del punteggio bloccato
-                }
-            } catch(e) {
-                // Ignora errori di analisi canvas
-            }
+            // COMPLETAMENTE DISABILITATO per evitare falsi positivi
+            // Il game over viene rilevato ESCLUSIVAMENTE dal motore C++ tramite syncGameStateWithCpp()
+            // Questo garantisce che il game over appaia SOLO quando si perde realmente
+            return;
         }
         
         function updateGameTime() {
