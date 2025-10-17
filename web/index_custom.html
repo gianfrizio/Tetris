@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="css/menus.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
-</body>
+<body>
     <!-- Particelle animate di sfondo -->
     <div class="bg-particles">
         <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
@@ -391,21 +391,36 @@
 
     <!-- Script Emscripten (modificato) -->
 
-    <!-- JavaScript Modules (in dependency order) -->
-    <script src="js/dom-elements.js"></script>
-    <script src="js/function-declarations.js"></script>  <!-- Function placeholders -->
-    <script src="js/ui-manager.js"></script>              <!-- Defines: startGameTimer, pauseTimer, etc. -->
-    <script src="js/pause-system.js"></script>            <!-- Defines: addGameOverKeyboardListeners, restartFromGameOver, startGameOverMonitoring -->
-    <script src="js/audio-controls.js"></script>          <!-- Defines: showNewGameOver, hideNewGameOver, etc. (uses pause-system functions) -->
-    <script src="js/emscripten-setup.js"></script>        <!-- Uses: startGameTimer -->
-    <script src="js/game-start.js"></script>
-    <script src="js/stats-updater.js"></script>           <!-- Uses: showNewGameOver -->
-    <script src="js/keyboard-controls.js"></script>
-    <script src="js/game-over.js"></script>
-    <script src="js/touch-controls.js"></script>
-    <script src="js/init.js"></script>                     <!-- Last: initializes everything (uses restartFromGameOver) -->
-    
-    <!-- WebAssembly Tetris Engine -->
+    <!-- JavaScript Modules - CRITICAL: Load order matters! -->
+
+    <!-- LAYER 1: Configuration and Core State (no dependencies) -->
+    <script src="js/config.js"></script>                   <!-- Centralized configuration constants -->
+    <script src="js/game-state.js"></script>              <!-- Global state management (MUST BE FIRST) -->
+    <script src="js/dom-elements.js"></script>            <!-- DOM element references -->
+    <script src="js/touch-controls.js"></script>          <!-- Touch utilities (MUST load early - provides fitCanvasToViewport, addTouchControls) -->
+
+    <!-- LAYER 2: Core UI Management (depends on state) -->
+    <script src="js/ui-manager.js"></script>              <!-- Defines: startGameTimer, forcePause, forceResume -->
+    <script src="js/pause-system.js"></script>            <!-- Defines: restartFromGameOver, startGameOverMonitoring -->
+    <script src="js/audio-controls.js"></script>          <!-- Defines: showNewGameOver, hideNewGameOver, audio controls -->
+    <script src="js/visibility-manager.js"></script>      <!-- Centralized visibility change handling -->
+
+    <!-- LAYER 3: Game Integration (depends on managers) -->
+    <script src="js/emscripten-setup.js"></script>        <!-- C++/JS integration, uses startGameTimer -->
+    <script src="js/game-start.js"></script>              <!-- Game initialization flow -->
+    <script src="js/stats-updater.js"></script>           <!-- Real-time stats sync, uses showNewGameOver -->
+
+    <!-- LAYER 4: Input Handlers (depend on game integration) -->
+    <script src="js/keyboard-controls.js"></script>       <!-- Keyboard event handling -->
+
+    <!-- LAYER 5: Legacy and Final Initialization -->
+    <script src="js/game-over.js"></script>               <!-- Legacy game over handlers -->
+    <script src="js/init.js"></script>                    <!-- LAST: Final initialization (uses all above) -->
+
+    <!-- Development Tools (comment out for production builds) -->
+    <script src="js/debug-tools.js"></script>             <!-- Debug utilities (TetrisDebug namespace) -->
+
+    <!-- WebAssembly Tetris Engine (async load, independent) -->
     <script async src="tetris.js"></script>
 </body>
 </html>

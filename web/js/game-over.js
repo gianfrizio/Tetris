@@ -3,7 +3,7 @@
 document.addEventListener('keydown', (event) => {
     // ENTER key handling for restart
     if (event.key === 'Enter' || event.code === 'Enter') {
-        if (lastScore > 0) {
+        if (gameState.get('lastScore') > 0) {
             console.log('🔍 ENTER pressed during game, triggering game over first');
             stopTimer();
 
@@ -15,7 +15,7 @@ document.addEventListener('keydown', (event) => {
         } else {
             // Punteggio 0, probabilmente nuovo gioco
             console.log('🆕 ENTER pressed with score 0, ensuring timer is active');
-            if (!isTimerRunning) {
+            if (!gameState.get('isTimerRunning')) {
                 restartTimer();
             }
         }
@@ -31,23 +31,21 @@ document.addEventListener('keydown', (event) => {
         // Funzione per riavviare il timer per una nuova partita
         function restartTimer() {
             console.log('🔄 Restarting timer AND game');
-            
+
             // Reset completo
-            isGameOver = false;
-            isTimerRunning = true;
-            isPaused = false;  // Reset anche lo stato pausa
-            gameEndTime = null;
-            gameStartTimeReal = Date.now();
-            totalPausedTime = 0;
-            pauseStartTime = null;
-            lastScoreChangeTime = Date.now();
-            lastScoreCheck = 0;
-            scoreStuckCount = 0;
-            
+            gameState.set('isGameOver', false);
+            gameState.set('isTimerRunning', true);
+            gameState.set('isPaused', false);  // Reset anche lo stato pausa
+            gameState.set('gameEndTime', null);
+            gameState.set('gameStartTimeReal', Date.now());
+            gameState.set('totalPausedTime', 0);
+            gameState.set('pauseStartTime', null);
+            gameState.set('lastScoreChangeTime', Date.now());
+
             // RESET GAME OVER STATE - FONDAMENTALE!
-            newGameOverActive = false;
-            mobileGameOverActive = false;
-            lastKnownScore = 0;
+            gameState.set('newGameOverActive', false);
+            gameState.set('mobileGameOverActive', false);
+            gameState.set('lastKnownScore', 0);
             
             // Reset display
             const gameTimeElement = document.getElementById('gameTime');
@@ -97,10 +95,11 @@ document.addEventListener('keydown', (event) => {
         };
         
         window.gameInfo = function() {
+            const gameStartTimeReal = gameState.get('gameStartTimeReal');
             console.log('🎮 Game State:', {
-                isGameOver: isGameOver,
-                isTimerRunning: isTimerRunning,
-                lastScore: lastScore,
+                isGameOver: gameState.get('isGameOver'),
+                isTimerRunning: gameState.get('isTimerRunning'),
+                lastScore: gameState.get('lastScore'),
                 scoreStuckCount: scoreStuckCount,
                 timeElapsed: gameStartTimeReal ? Math.floor((Date.now() - gameStartTimeReal) / 1000) + 's' : 'Not started'
             });
@@ -182,44 +181,45 @@ document.addEventListener('keydown', (event) => {
                 console.log('Raw C++ values:', {currentScore, currentLevel, currentLines, gameRunning});
                 
                 // Aggiorna sempre i valori (rimuovo il controllo gameRunning per debug)
-                lastScore = currentScore;
-                lastLevel = currentLevel;
-                lastLines = currentLines;
-                
+                gameState.set('lastScore', currentScore);
+                gameState.set('lastLevel', currentLevel);
+                gameState.set('lastLines', currentLines);
+
                 // Aggiorna gli elementi HTML
                 const scoreDisplay = document.getElementById('scoreDisplay');
                 const levelDisplay = document.getElementById('levelDisplay');
                 const linesDisplay = document.getElementById('linesDisplay');
-                
+
                 console.log('HTML elements found:', {
                     scoreDisplay: !!scoreDisplay,
                     levelDisplay: !!levelDisplay,
                     linesDisplay: !!linesDisplay
                 });
-                
-                if (scoreDisplay) scoreDisplay.textContent = lastScore.toLocaleString();
-                if (levelDisplay) levelDisplay.textContent = lastLevel;
-                if (linesDisplay) linesDisplay.textContent = lastLines;
-                
+
+                if (scoreDisplay) scoreDisplay.textContent = currentScore.toLocaleString();
+                if (levelDisplay) levelDisplay.textContent = currentLevel;
+                if (linesDisplay) linesDisplay.textContent = currentLines;
+
                 // Check if game restarted (score=0, level=1, gameRunning=true)
-                if (gameRunning && currentScore === 0 && currentLevel === 1 && isGameOver) {
+                if (gameRunning && currentScore === 0 && currentLevel === 1  && gameState.get('isGameOver')) {
                     console.log('🔄 Game restart detected - resetting info panel');
                     resetGameInfo();
                 }
-                
+
                 // Simple detection: if score goes from >0 to 0, might be game over
-                if (lastScore > 0 && currentScore === 0 && !isGameOver) {
+                if (currentScore === 0 && gameState.get('lastScore') > 0  && !gameState.get('isGameOver')) {
                     console.log('💀 Possible game over: score reset to 0');
                     // Don't auto-trigger, let user use ENTER to restart
                 }
-                
+
                 // Aggiorna il record se necessario
-                if (lastScore > highScore) {
-                    highScore = lastScore;
-                    localStorage.setItem('tetris-high-score', highScore);
+                const highScore = gameState.get('highScore');
+                if (currentScore > highScore) {
+                    gameState.set('highScore', currentScore);
+                    localStorage.setItem('tetris-high-score', currentScore);
                     const highScoreElement = document.getElementById('highScore');
                     if (highScoreElement) {
-                        highScoreElement.textContent = parseInt(highScore).toLocaleString();
+                        highScoreElement.textContent = parseInt(currentScore).toLocaleString();
                         // Effetto visivo per nuovo record
                         highScoreElement.style.color = '#ff9800';
                         highScoreElement.style.textShadow = '0 0 15px #ff9800';
@@ -229,8 +229,8 @@ document.addEventListener('keydown', (event) => {
                         }, 2000);
                     }
                 }
-                
-                console.log('Stats updated from C++:', {score: lastScore, level: lastLevel, lines: lastLines, running: gameRunning});
+
+                console.log('Stats updated from C++:', {score: currentScore, level: currentLevel, lines: currentLines, running: gameRunning});
                 
             } catch(e) {
                 console.error('Error in updateStatsFromCpp:', e);
@@ -269,33 +269,33 @@ document.addEventListener('keydown', (event) => {
         
         function resetGameInfo() {
             console.log('🔄 Starting resetGameInfo...');
-            
+
             // Reset game state
-            isGameOver = false;
-            isPaused = false;
-            isTimerRunning = true;
-            
+            gameState.set('isGameOver', false);
+            gameState.set('isPaused', false);
+            gameState.set('isTimerRunning', true);
+
             // Reset game over state - QUESTO È FONDAMENTALE!
-            newGameOverActive = false;
-            mobileGameOverActive = false;
-            
+            gameState.set('newGameOverActive', false);
+            gameState.set('mobileGameOverActive', false);
+
             // Reset time tracking
-            gameStartTimeReal = Date.now();
-            gameEndTime = null;
-            totalPausedTime = 0;
-            pauseStartTime = null;
-            
+            gameState.set('gameStartTimeReal', Date.now());
+            gameState.set('gameEndTime', null);
+            gameState.set('totalPausedTime', 0);
+            gameState.set('pauseStartTime', null);
+
             // Reset score tracking for game over detection
-            lastKnownScore = 0;
-            lastScoreChangeTime = Date.now();
+            gameState.set('lastKnownScore', 0);
+            gameState.set('lastScoreChangeTime', Date.now());
             
             console.log('🔄 Reset timer variables:', {
-                gameStartTimeReal: new Date(gameStartTimeReal).toLocaleTimeString(),
-                isTimerRunning,
-                isPaused,
-                isGameOver,
-                newGameOverActive,
-                mobileGameOverActive
+                gameStartTimeReal: new Date(gameState.get('gameStartTimeReal')).toLocaleTimeString(),
+                isTimerRunning: gameState.get('isTimerRunning'),
+                isPaused: gameState.get('isPaused'),
+                isGameOver: gameState.get('isGameOver'),
+                newGameOverActive: gameState.get('newGameOverActive'),
+                mobileGameOverActive: gameState.get('mobileGameOverActive')
             });
             
             // Update game state element

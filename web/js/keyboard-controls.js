@@ -81,7 +81,7 @@
                 }
                 
                 // ESC da tastiera fisica - gestisci normalmente
-                if (!isGameOver) {
+                if (!gameState.get('isGameOver')) {
                     const now = Date.now();
                     if (now - lastPauseToggleMs < PAUSE_TOGGLE_COOLDOWN_MS) {
                         console.log('Ignorato ESC rapido (cooldown)');
@@ -89,7 +89,7 @@
                     }
                     lastPauseToggleMs = now;
 
-                    if (isPaused) {
+                    if (gameState.get('isPaused')) {
                         console.log('FORCING resume da tastiera');
                         forceResume('keyboard');
                         
@@ -139,11 +139,11 @@
                 if (event.key === 'Enter' || event.code === 'Enter') {
                     console.log('ENTER key detected');
                     
-                    if (isGameOver) {
+                    if (gameState.get('isGameOver')) {
                         // Se siamo in game over, riavvia immediatamente
                         console.log('� Restarting game from game over state');
                         restartTimer();
-                    } else if (lastScore > 0) {
+                    } else if (gameState.get('lastScore') > 0) {
                         // Se abbiamo un punteggio e premiamo INVIO, potrebbe essere per ricominciare
                         console.log('ENTER pressed with lastScore > 0 - restarting game');
                         restartTimer();

@@ -1,6 +1,6 @@
 // ==================== AUDIO CONTROLS ====================
 
-console.log('📦 Loading: audio-controls.js');
+logger.log('audio', 'loading...');
 // ==================== MOBILE TOUCH SUPPORT PER GAME OVER DISABILITATO ====================
 
 /**
@@ -16,7 +16,7 @@ const observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
             if (gameContainer.classList.contains('visible')) {
-                console.log('Game container visible, re-adding touch controls...');
+                logger.log('ui', 'Game container visible, re-adding touch controls');
                 setTimeout(addTouchControls, 100);
                 observer.disconnect();
             }
@@ -31,60 +31,34 @@ observer.observe(gameContainer, { attributes: true });
 
 // Auto-pause system when game goes to background (mobile and desktop)
 // NOTA: wasAutoPaused e autoPauseReason sono dichiarati in dom-elements.js
-
-// Primary method: Page Visibility API (works on all modern browsers)
-document.addEventListener('visibilitychange', function() {
-    if (!gameStartRequested || isGameOver) return;
-    
-    if (document.hidden && !isPaused) {
-        // Page is hidden (tab switch, app background, etc.)
-        console.log('🔄 Auto-pausing: page went to background');
-        wasAutoPaused = true;
-        autoPauseReason = 'background';
-        forcePause('background');
-        
-        // Also pause the C++ game engine
-        try {
-            if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGameRunning() && !Module._isGamePaused()) {
-                simulateKeyPress('Escape');
-                console.log('🎮 C++ game also paused for background');
-            }
-        } catch(e) {
-            console.log('Error pausing C++ game:', e);
-        }
-    } else if (!document.hidden && wasAutoPaused && autoPauseReason === 'background') {
-        // Page is visible again
-        console.log('👀 Page back to foreground - showing resume options');
-        showResumeDialog();
-    }
-});
+// NOTA: visibilitychange handler è ora in visibility-manager.js
 
 // Secondary method: Window focus/blur (backup for older browsers)
 window.addEventListener('blur', function() {
-    if (!gameStartRequested || isGameOver || document.hidden) return; // visibilitychange already handled it
-    
-    if (!isPaused) {
-        console.log('🔄 Auto-pausing: window lost focus');
-        wasAutoPaused = true;
-        autoPauseReason = 'blur';
+    if (!gameState.get('gameStartRequested') || gameState.get('isGameOver') || document.hidden) return; // visibilitychange already handled it
+
+    if (!gameState.get('isPaused')) {
+        logger.log('pause', 'Auto-pausing: window lost focus');
+        gameState.set('wasAutoPaused', true);
+        gameState.set('autoPauseReason', 'blur');
         forcePause('auto');
-        
+
         try {
             if (typeof Module !== 'undefined' && Module._isGameRunning && Module._isGameRunning() && !Module._isGamePaused()) {
                 simulateKeyPress('Escape');
-                console.log('🎮 C++ game also paused for focus loss');
+                logger.log('cpp', 'C++ game also paused for focus loss');
             }
         } catch(e) {
-            console.log('Error pausing C++ game:', e);
+            logger.error('cpp', 'Error pausing C++ game', e);
         }
     }
 });
 
 window.addEventListener('focus', function() {
-    if (!gameStartRequested || isGameOver) return;
-    
-    if (wasAutoPaused && autoPauseReason === 'blur' && !document.hidden) {
-        console.log('👀 Window regained focus - showing resume options');
+    if (!gameState.get('gameStartRequested') || gameState.get('isGameOver')) return;
+
+    if (gameState.get('wasAutoPaused') && gameState.get('autoPauseReason') === 'blur' && !document.hidden) {
+        logger.log('pause', 'Window regained focus - showing resume options');
         showResumeDialog();
     }
 });
@@ -93,20 +67,20 @@ window.addEventListener('focus', function() {
 // Override the placeholder function
 showResumeDialog = function() {
     // Reset auto-pause state
-    wasAutoPaused = false;
-    autoPauseReason = '';
-    
+    gameState.set('wasAutoPaused', false);
+    gameState.set('autoPauseReason', '');
+
     // On mobile, show the pause menu
     if (window.innerWidth <= 768) {
-        console.log('📱 Mobile: showing pause menu for resume');
+        logger.log('ui', 'Mobile: showing pause menu for resume');
         const mobilePauseMenu = document.getElementById('mobilePauseMenu');
         if (mobilePauseMenu) {
             mobilePauseMenu.classList.add('active');
-            mobilePauseActive = true;
+            gameState.set('mobilePauseActive', true);
         }
     } else {
         // On desktop, show the pause menu
-        console.log('🖥️ Desktop: showing pause menu for resume');
+        logger.log('ui', 'Desktop: showing pause menu for resume');
         showDesktopPauseMenu();
     }
 }
@@ -121,7 +95,7 @@ showDesktopPauseMenu = function() {
 
         // Show menu
         menu.classList.add('active');
-        console.log('🖥️ Desktop pause menu shown');
+        logger.log('ui', 'Desktop pause menu shown');
 
         // Focus the resume button for keyboard accessibility
         setTimeout(() => {
@@ -136,7 +110,7 @@ hideDesktopPauseMenu = function() {
     const menu = document.getElementById('desktopPauseMenu');
     if (menu) {
         menu.classList.remove('active');
-        console.log('🖥️ Desktop pause menu hidden');
+        logger.log('ui', 'Desktop pause menu hidden');
     }
 }
 
@@ -169,7 +143,7 @@ updateDesktopPauseMenuStats = function() {
             }
         }
     } catch(e) {
-        console.log('Error updating pause menu stats:', e);
+        logger.error('ui', 'Error updating pause menu stats', e);
     }
 }
 
@@ -187,21 +161,21 @@ function showDesktopResumeNotification() {
  */
 // Override the placeholder function
 showNewGameOver = function(score = 0, level = 1, lines = 0, gameTime = '00:00') {
-    console.log('🎮 [REAL FUNCTION] Showing new unified game over screen', { score, level, lines, gameTime, newGameOverActive });
-    
+    logger.log('gameover', 'Showing new unified game over screen', { score, level, lines, gameTime, newGameOverActive: gameState.get('newGameOverActive') });
+
     // Se è già attiva, non mostrare di nuovo
-    if (newGameOverActive) {
-        console.log('⚠️ Game over screen already active, skipping');
+    if (gameState.get('newGameOverActive')) {
+        logger.warn('gameover', 'Game over screen already active, skipping');
         return;
     }
-    
-    newGameOverActive = true;
+
+    gameState.set('newGameOverActive', true);
     const overlay = document.getElementById('gameOverOverlay');
     const canvas = document.getElementById('canvas');
-    
+
     if (!overlay) {
-        console.error('Game over overlay not found');
-        newGameOverActive = false; // Reset se non trovato
+        logger.error('gameover', 'Game over overlay not found');
+        gameState.set('newGameOverActive', false); // Reset se non trovato
         return;
     }
     
@@ -225,8 +199,8 @@ showNewGameOver = function(score = 0, level = 1, lines = 0, gameTime = '00:00') 
     
     // Aggiungi i listener per i controlli da tastiera
     addGameOverKeyboardListeners();
-    
-    console.log('✅ New game over screen displayed');
+
+    logger.success('gameover', 'New game over screen displayed');
 }
 
 /**
@@ -234,9 +208,9 @@ showNewGameOver = function(score = 0, level = 1, lines = 0, gameTime = '00:00') 
  */
 // Override the placeholder function
 hideNewGameOver = function() {
-    console.log('🎮 Hiding new game over screen');
-    
-    newGameOverActive = false;
+    logger.log('gameover', 'Hiding new game over screen');
+
+    gameState.set('newGameOverActive', false);
     const overlay = document.getElementById('gameOverOverlay');
     const canvas = document.getElementById('canvas');
     
@@ -257,11 +231,11 @@ hideNewGameOver = function() {
     
     // Rimuovi i listener della tastiera
     removeGameOverKeyboardListeners();
-    
+
     // Reset anche dello stato legacy mobile per sicurezza
-    mobileGameOverActive = false;
-    
-    console.log('✅ New game over screen hidden - all states reset');
+    gameState.set('mobileGameOverActive', false);
+
+    logger.success('gameover', 'New game over screen hidden - all states reset');
 }
 
 /**
@@ -271,18 +245,21 @@ hideNewGameOver = function() {
 calculateGameOverData = function(score, level, lines, gameTime) {
     // Ottieni il record precedente
     const previousRecord = parseInt(localStorage.getItem('tetris-high-score') || '0');
-    
+
     // Determina se è un nuovo record
     const isNewRecord = score > previousRecord;
-    
+
     // Salva il nuovo record se necessario
     if (isNewRecord) {
         localStorage.setItem('tetris-high-score', score.toString());
-        console.log('� New high score achieved:', score);
+        logger.success('gameover', 'New high score achieved: ' + score);
     }
-    
+
     // Calcola il tempo totale di gioco
     let totalGameTimeMs = 0;
+    const gameStartTimeReal = gameState.get('gameStartTimeReal');
+    const gameEndTime = gameState.get('gameEndTime');
+    const totalPausedTime = gameState.get('totalPausedTime');
     if (gameStartTimeReal && gameEndTime) {
         totalGameTimeMs = gameEndTime - gameStartTimeReal - totalPausedTime;
     } else if (gameStartTimeReal) {
@@ -304,8 +281,8 @@ calculateGameOverData = function(score, level, lines, gameTime) {
         isNewRecord: isNewRecord,
         totalGameTime: totalGameTimeMs
     };
-    
-    console.log('📊 Game over data calculated:', gameOverData);
+
+    logger.log('gameover', 'Game over data calculated', gameOverData);
 }
 
 /**
@@ -345,4 +322,357 @@ updateGameOverElements = function() {
         }
     }
 }
+
+// ==================== CONTROLLI AUDIO VOLUME/MUTE ====================
+
+// Variabili globali per controllo audio
+let audioInitialized = false;
+
+// Inizializza controlli audio
+function initAudioControls() {
+    if (audioInitialized) return;
+
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    const muteButton = document.getElementById('mute-button');
+    const muteIcon = muteButton?.querySelector('.mute-icon');
+    const muteText = muteButton?.querySelector('.mute-text');
+
+    if (!volumeSlider || !volumeValue || !muteButton) {
+        logger.log('audio', 'Audio controls not found, retrying...');
+        setTimeout(initAudioControls, 500);
+        return;
+    }
+
+    logger.log('audio', 'Initializing audio controls...');
+
+    // Carica impostazioni salvate
+    const savedVolume = localStorage.getItem('tetris-volume');
+    const savedMuted = localStorage.getItem('tetris-muted') === 'true';
+
+    // Determina il volume da usare (salvato o default 30%)
+    const volumeToUse = savedVolume !== null ? parseInt(savedVolume) : 30;
+    volumeSlider.value = volumeToUse;
+    volumeValue.textContent = volumeToUse;
+
+    // Se non c'era un volume salvato, salva il default
+    if (savedVolume === null) {
+        localStorage.setItem('tetris-volume', '30');
+        logger.log('audio', 'Default volume set to 30%');
+    }
+
+    if (savedMuted) {
+        muteButton.classList.add('muted');
+        muteIcon.textContent = '🔇';
+        muteText.textContent = 'Unmute';
+
+        // IMPORTANTE: Non usare muteAudio all'avvio, usa volume 0
+        // Questo permette al contesto audio di inizializzarsi correttamente
+        if (typeof Module !== 'undefined' && Module._setVolume) {
+            Module._setVolume(0);
+            logger.log('audio', 'Audio muted via volume 0 (allows audio context to initialize)');
+        }
+    } else {
+        // Se non è mutato, applica il volume normalmente
+        if (typeof Module !== 'undefined' && Module._setVolume) {
+            const sdlVolume = Math.round((volumeToUse / 100) * 128);
+            Module._setVolume(sdlVolume);
+            logger.log('audio', 'Volume applied: ' + volumeToUse + '%');
+        }
+
+        // Riapplica dopo un timeout per sicurezza
+        setTimeout(() => {
+            if (typeof Module !== 'undefined' && Module._setVolume) {
+                const sdlVolume = Math.round((volumeToUse / 100) * 128);
+                Module._setVolume(sdlVolume);
+                logger.log('audio', 'Volume reapplied after module load: ' + volumeToUse + '%');
+            }
+        }, 500);
+    }
+
+    // Previeni propagazione eventi touch sui controlli audio
+    const audioControlsContainer = document.querySelector('.audio-controls');
+    if (audioControlsContainer) {
+        audioControlsContainer.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        });
+        audioControlsContainer.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+        });
+        audioControlsContainer.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+        });
+        audioControlsContainer.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    // Event listener per il slider del volume
+    // Aggiorna in tempo reale ma ottimizzato con requestAnimationFrame
+    let animationFrameId = null;
+
+    volumeSlider.addEventListener('input', function(e) {
+        e.stopPropagation();
+        const volume = parseInt(this.value); // Valore 0-100
+
+        // Cancella il frame precedente se esiste
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+
+        // Usa requestAnimationFrame per aggiornare in modo efficiente
+        animationFrameId = requestAnimationFrame(() => {
+            // Aggiorna il valore visualizzato
+            volumeValue.textContent = volume;
+
+            // Converti il volume da 0-100 a 0-128 per SDL
+            const sdlVolume = Math.round((volume / 100) * 128);
+
+            // Applica il volume al gioco
+            if (typeof Module !== 'undefined' && Module._setVolume) {
+                try {
+                    Module._setVolume(sdlVolume);
+                } catch (e) {
+                    logger.error('audio', 'Error setting volume', e);
+                }
+            }
+
+            // Se il volume è > 0 e l'audio era mutato, togli il mute
+            if (volume > 0 && muteButton.classList.contains('muted')) {
+                muteButton.classList.remove('muted');
+                muteIcon.textContent = '🔊';
+                muteText.textContent = 'Mute';
+
+                if (typeof Module !== 'undefined' && Module._muteAudio) {
+                    Module._muteAudio(false);
+                    localStorage.setItem('tetris-muted', 'false');
+                }
+            }
+
+            animationFrameId = null;
+        });
+    });
+
+    // Salva il valore solo quando lo slider si ferma
+    volumeSlider.addEventListener('change', function(e) {
+        e.stopPropagation();
+        const volume = parseInt(this.value);
+        localStorage.setItem('tetris-volume', volume.toString());
+        logger.log('audio', 'Volume saved: ' + volume + '%');
+    });
+
+    // Previeni eventi touch specifici per il volume slider
+    volumeSlider.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+    });
+    volumeSlider.addEventListener('touchend', function(e) {
+        e.stopPropagation();
+    });
+    volumeSlider.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    });
+
+    // Event listener per il pulsante mute
+    muteButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isMuted = this.classList.contains('muted');
+
+        if (isMuted) {
+            // Unmute - ripristina il volume
+            this.classList.remove('muted');
+            muteIcon.textContent = '🔊';
+            muteText.textContent = 'Mute';
+            localStorage.setItem('tetris-muted', 'false');
+
+            if (typeof Module !== 'undefined' && Module._setVolume) {
+                try {
+                    const currentVolume = parseInt(volumeSlider.value || '30');
+                    const sdlVolume = Math.round((currentVolume / 100) * 128);
+
+                    // Imposta il volume direttamente (non usare muteAudio)
+                    Module._setVolume(sdlVolume);
+                    logger.log('audio', 'Audio unmuted - volume restored to: ' + currentVolume + '%');
+
+                    // Riapplica dopo un breve delay per sicurezza
+                    setTimeout(() => {
+                        Module._setVolume(sdlVolume);
+                        logger.log('audio', 'Volume reconfirmed: ' + currentVolume + '%');
+                    }, 100);
+
+                } catch (e) {
+                    logger.error('audio', 'Error unmuting audio', e);
+                }
+            }
+        } else {
+            // Mute - imposta volume a 0
+            this.classList.add('muted');
+            muteIcon.textContent = '🔇';
+            muteText.textContent = 'Unmute';
+            localStorage.setItem('tetris-muted', 'true');
+
+            if (typeof Module !== 'undefined' && Module._setVolume) {
+                try {
+                    // Usa volume 0 invece di muteAudio
+                    Module._setVolume(0);
+                    logger.log('audio', 'Audio muted via volume 0');
+                } catch (e) {
+                    logger.error('audio', 'Error muting audio', e);
+                }
+            }
+        }
+    });
+
+    audioInitialized = true;
+    logger.success('audio', 'Audio controls initialized successfully');
+}
+
+// Inizializza i controlli audio quando il DOM è pronto
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initAudioControls, 1000);
+});
+
+// Riprova l'inizializzazione quando il modulo Emscripten è caricato
+window.addEventListener('load', function() {
+    setTimeout(initAudioControls, 2000);
+});
+
+// ==================== GESTIONE AUDIO IN BACKGROUND ====================
+
+let wasAudioMutedBeforeBackground = false;
+let originalVolume = 100;
+
+/**
+ * Gestisce l'audio quando l'app va in background
+ */
+function handleBackgroundAudio() {
+    if (typeof Module !== 'undefined' && Module._setVolume) {
+        try {
+            // Salva lo stato attuale dell'audio prima di mutarlo
+            const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
+            wasAudioMutedBeforeBackground = currentMuteState;
+
+            // Salva il volume corrente
+            originalVolume = parseInt(localStorage.getItem('tetris-volume') || '30');
+
+            // Abbassa il volume quando va in background (solo se non era già mutato)
+            if (!currentMuteState) {
+                Module._setVolume(0);
+                logger.log('audio', 'Audio volume set to 0 - app in background');
+            }
+        } catch (e) {
+            logger.error('audio', 'Error handling background audio', e);
+        }
+    }
+}
+
+/**
+ * Ripristina l'audio quando l'app torna in foreground
+ */
+function handleForegroundAudio() {
+    if (typeof Module !== 'undefined' && Module._setVolume) {
+        try {
+            // Controlla lo stato corrente del mute dal localStorage
+            const currentMuteState = localStorage.getItem('tetris-muted') === 'true';
+
+            // Ripristina il volume solo se:
+            // 1. Non era mutato prima di andare in background
+            // 2. Non è attualmente mutato dall'utente
+            if (!wasAudioMutedBeforeBackground && !currentMuteState) {
+                // Usa il volume salvato nel localStorage, non originalVolume
+                const savedVolume = parseInt(localStorage.getItem('tetris-volume') || '30');
+                const sdlVolume = Math.round((savedVolume / 100) * 128);
+                Module._setVolume(sdlVolume);
+                logger.log('audio', 'Audio volume restored to ' + savedVolume + '% - app in foreground');
+            } else if (currentMuteState) {
+                // Se l'utente ha mutato manualmente, mantieni il mute (volume 0)
+                logger.log('audio', 'Audio remains muted - user preference');
+            }
+        } catch (e) {
+            logger.error('audio', 'Error handling foreground audio', e);
+        }
+    }
+}
+
+// ==================== MOBILE SPECIFIC EVENTS ====================
+
+let isAppActive = true;
+
+// Event listeners per dispositivi mobili
+window.addEventListener('focus', function() {
+    isAppActive = true;
+    setTimeout(() => {
+        handleForegroundAudio();
+    }, 200); // Delay maggiore per mobile
+});
+
+window.addEventListener('blur', function() {
+    isAppActive = false;
+    handleBackgroundAudio();
+});
+
+// Event listeners specifici per iOS
+window.addEventListener('pagehide', function() {
+    isAppActive = false;
+    handleBackgroundAudio();
+});
+
+window.addEventListener('pageshow', function() {
+    isAppActive = true;
+    setTimeout(() => {
+        handleForegroundAudio();
+    }, 300); // Delay ancora maggiore per iOS
+});
+
+// Event listeners per Android
+document.addEventListener('pause', function() {
+    isAppActive = false;
+    handleBackgroundAudio();
+});
+
+document.addEventListener('resume', function() {
+    isAppActive = true;
+    setTimeout(() => {
+        handleForegroundAudio();
+    }, 250);
+});
+
+// ==================== ADDITIONAL MOBILE DETECTION ====================
+
+// Rileva quando l'utente naviga via (principalmente per mobile)
+window.addEventListener('beforeunload', function() {
+    handleBackgroundAudio();
+});
+
+// Event listener per il cambio di orientamento (può indicare un cambio di contesto)
+window.addEventListener('orientationchange', function() {
+    // Piccolo delay dopo il cambio di orientamento
+    setTimeout(() => {
+        if (isAppActive && !document.hidden) {
+            handleForegroundAudio();
+        }
+    }, 500);
+});
+
+// ==================== TOUCH AND INTERACTION RESUMPTION ====================
+
+// Rileva quando l'utente interagisce di nuovo con la pagina
+let interactionTimeout;
+
+function handleUserInteraction() {
+    clearTimeout(interactionTimeout);
+    interactionTimeout = setTimeout(() => {
+        if (!document.hidden && isAppActive) {
+            handleForegroundAudio();
+        }
+    }, 100);
+}
+
+// Event listeners per interazioni utente (ripristino audio dopo interazione)
+document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+document.addEventListener('touchend', handleUserInteraction, { passive: true });
+document.addEventListener('click', handleUserInteraction);
+document.addEventListener('keydown', handleUserInteraction);
+
+logger.loaded('audio');
 

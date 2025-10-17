@@ -1,42 +1,95 @@
-// ==================== DOM ELEMENTS ==================== 
+// ==================== DOM ELEMENTS AND GLOBAL VARIABLES ====================
+// Central registry of DOM elements and global variables used across the application
+// This file serves as documentation for the global scope
 
-    // Elementi DOM
-    const startScreen = document.getElementById('startScreen');
-    const playButton = document.getElementById('playButton');
-    const customLoading = document.getElementById('customLoading');
-    const loadingProgress = document.getElementById('loadingProgress');
-    const gameContainer = document.querySelector('.game-container');
+console.log('📦 Loading: dom-elements.js');
 
-    let gameReady = false;
-    let gameStartRequested = false;
+// ==================== DOM ELEMENT REFERENCES ====================
+// These are accessed frequently throughout the application
 
-    // ==================== GLOBAL STATE VARIABLES ====================
-    // Variabili globali per lo stato del gioco (devono essere dichiarate per prime)
-    let isPaused = false;
-    let isGameOver = false;
-    let isTimerRunning = true;
-    let gameStartTimeReal = null;
-    let gameEndTime = null;
-    let totalPausedTime = 0;
-    let pauseStartTime = null;
-    let lastScoreChangeTime = Date.now();
+// Start screen elements
+const startScreen = document.getElementById('startScreen');
+const playButton = document.getElementById('playButton');
+const customLoading = document.getElementById('customLoading');
+const loadingProgress = document.getElementById('loadingProgress');
 
-    // Variabili per il sistema di game over
-    let gameOverCheckInterval = null;
-    let lastKnownScore = 0;
-    let newGameOverActive = false;
-    let mobileGameOverActive = false;
-    let gameOverMonitoringInitialized = false;
+// Game container
+const gameContainer = document.querySelector('.game-container');
 
-    // Variabili per il sistema di pausa mobile
-    let mobilePauseActive = false;
+// Canvas element (main game display)
+const canvas = document.getElementById('canvas');
 
-    // Variabili per l'auto-pausa
-    let wasAutoPaused = false;
-    let autoPauseReason = '';
+// Game statistics panel elements
+const scoreDisplay = document.getElementById('scoreDisplay');
+const levelDisplay = document.getElementById('levelDisplay');
+const linesDisplay = document.getElementById('linesDisplay');
+const highScoreElement = document.getElementById('highScore');
+const gameTimeElement = document.getElementById('gameTime');
+const gameStateElement = document.getElementById('gameState');
 
-    // Variabili per le statistiche
-    let lastScore = 0;
-    let lastLevel = 1;
-    let lastLines = 0;
-    let highScore = localStorage.getItem('tetris-high-score') || 0;
+// Pause menu elements
+const mobilePauseMenu = document.getElementById('mobilePauseMenu');
+const desktopPauseMenu = document.getElementById('desktopPauseMenu');
+
+// Game over elements
+const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+// Audio control elements
+const volumeSlider = document.getElementById('volume-slider');
+const muteButton = document.getElementById('mute-button');
+
+// Expose as namespace for easy access
+window.DOMElements = {
+    startScreen,
+    playButton,
+    customLoading,
+    loadingProgress,
+    gameContainer,
+    canvas,
+    scoreDisplay,
+    levelDisplay,
+    linesDisplay,
+    highScore: highScoreElement,
+    gameTime: gameTimeElement,
+    gameStateDisplay: gameStateElement,
+    mobilePauseMenu,
+    desktopPauseMenu,
+    gameOverOverlay,
+    volumeSlider,
+    muteButton
+};
+
+// ==================== LEGACY GLOBAL VARIABLES ====================
+// These globals are NOT managed by gameState and exist for backward compatibility
+// TODO: Migrate these to gameState or refactor them out
+
+// Game initialization state
+let gameReady = false;              // Set to true when game module is ready
+let gameStartRequested = false;     // Set to true when user clicks "Play"
+
+// ==================== LEGACY GLOBAL VARIABLES (DECLARED IN OTHER FILES) ====================
+// These globals are declared in their respective files but listed here for documentation
+//
+// Touch control state (declared in touch-controls.js):
+//   - longPressTriggered, lastTapTime, recentTaps, canvasTouchActive
+//
+// Timer and game state (declared in various files, PARTIALLY in gameState):
+//   - gameStartTimeReal, isTimerRunning, isPaused, isGameOver
+//   - totalPausedTime, pauseStartTime, gameEndTime
+//
+// Auto-pause state (declared in visibility-manager.js):
+//   - wasAutoPaused, autoPauseReason
+//
+// Score tracking (declared in game-start.js):
+//   - lastScore, lastLevel, lastLines, highScore, lastScoreChangeTime
+//
+// Game over detection (already in gameState, declared in pause-system.js):
+//   - lastKnownScore, newGameOverActive, mobileGameOverActive
+//   - gameOverCheckInterval, gameOverMonitoringInitialized
+//
+// Stats updater (declared in game-start.js):
+//   - statsUpdateInterval
+
+console.log('✅ DOM elements registered');
+console.log('⚠️ Note: Multiple legacy global variables are declared across various files');
+console.log('   See comments above for documentation. Migration to gameState recommended.');

@@ -20,11 +20,11 @@
                 if (text) {
                     console.log('Game status:', text);
                     if (text.includes('complete') || !text) {
-                        gameReady = true;
+                        gameState.set('gameReady', true);
                         console.log('Game is ready!');
                     }
                 } else {
-                    gameReady = true;
+                    gameState.set('gameReady', true);
                     console.log('Game ready (no status)');
                 }
                 
@@ -45,7 +45,7 @@
                 this.totalDependencies = Math.max(this.totalDependencies, left);
                 console.log('Dependencies left:', left);
                 if (left === 0) {
-                    gameReady = true;
+                    gameState.set('gameReady', true);
                 }
             }
         });
@@ -53,7 +53,7 @@
         // Gestione pulsante PLAY
         playButton.addEventListener('click', function() {
             gameStarted = true;
-            gameStartRequested = true;
+            gameState.set('gameStartRequested', true);
             
             // Nascondi schermata iniziale
             startScreen.classList.add('hidden');
