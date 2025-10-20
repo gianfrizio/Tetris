@@ -188,6 +188,7 @@ class GameState extends EventEmitter {
     _updateUIForRestart() {
         const gameTimeElement = document.getElementById('gameTime');
         const gameStateElement = document.getElementById('gameState');
+        const canvas = document.getElementById('canvas');
 
         if (gameTimeElement) {
             gameTimeElement.textContent = '00:00';
@@ -198,6 +199,12 @@ class GameState extends EventEmitter {
             gameStateElement.textContent = 'In corso';
             gameStateElement.style.color = '';
             gameStateElement.style.textShadow = '';
+        }
+
+        // Ensure canvas visibility is fully restored after restart
+        if (canvas) {
+            canvas.style.opacity = '1';
+            canvas.style.pointerEvents = 'auto';
         }
 
         logger.success('game-state', 'UI updated for restart');

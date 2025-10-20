@@ -320,6 +320,13 @@ document.addEventListener('keydown', (event) => {
                 gameOverOverlay.classList.remove('active');
                 gameOverOverlay.style.display = 'none';
             }
+
+            // Ensure canvas visibility is restored after reset
+            const canvas = document.getElementById('canvas');
+            if (canvas) {
+                canvas.style.opacity = '1';
+                canvas.style.pointerEvents = 'auto';
+            }
             
             console.log('✅ Game info reset complete - game over state cleared');
         }
