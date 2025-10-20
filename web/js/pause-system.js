@@ -184,6 +184,14 @@ let gameOverData = {
                 const currentScore = Module._getScore();
                 const gameRunning = Module._isGameRunning();
 
+                // Skip game-over detection while the game is paused in JS or C++
+                const jsPaused = gameState.get('isPaused') || gameState.get('mobilePauseActive');
+                const cppPaused = Module._isGamePaused ? Module._isGamePaused() : false;
+                if (jsPaused || cppPaused) {
+                    // Avoid treating a pause (which may set C++ running=false) as game over
+                    return;
+                }
+
                 // Game over detected: not running and we had a score
                 // Only trigger if we previously observed the game running with a score
                 const newGameOverActive = gameState.get('newGameOverActive');

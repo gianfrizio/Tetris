@@ -163,21 +163,42 @@ function showDesktopResumeNotification() {
 showNewGameOver = function(score = 0, level = 1, lines = 0, gameTime = '00:00') {
     logger.log('gameover', 'Showing new unified game over screen', { score, level, lines, gameTime, newGameOverActive: gameState.get('newGameOverActive') });
 
-    // Se è già attiva, non mostrare di nuovo
-    if (gameState.get('newGameOverActive')) {
-        logger.warn('gameover', 'Game over screen already active, skipping');
-        return;
-    }
-
-    gameState.set('newGameOverActive', true);
+    // If it's already active, refresh the data/UI instead of skipping.
     const overlay = document.getElementById('gameOverOverlay');
     const canvas = document.getElementById('canvas');
 
     if (!overlay) {
         logger.error('gameover', 'Game over overlay not found');
-        gameState.set('newGameOverActive', false); // Reset se non trovato
+        // Ensure flag is cleared if overlay missing
+        gameState.set('newGameOverActive', false);
         return;
     }
+
+    if (gameState.get('newGameOverActive')) {
+        // Screen already visible — update displayed data and keep it visible
+        logger.log('gameover', 'Game over screen already active - updating displayed data', { score, level, lines, gameTime });
+        try {
+            calculateGameOverData(score, level, lines, gameTime);
+            updateGameOverElements();
+        } catch (e) {
+            logger.error('gameover', 'Error updating existing game over UI', e);
+        }
+
+        // Ensure overlay is visible/active
+        overlay.style.display = 'flex';
+        if (!overlay.classList.contains('active')) overlay.classList.add('active');
+
+        // Ensure canvas dimming is applied
+        if (canvas) {
+            canvas.style.opacity = '0.3';
+            canvas.style.pointerEvents = 'none';
+        }
+
+        return;
+    }
+
+    // Not active yet: proceed to show overlay
+    gameState.set('newGameOverActive', true);
     
     // Assicurati che l'overlay sia visibile 
     overlay.style.display = 'flex';
@@ -188,15 +209,13 @@ showNewGameOver = function(score = 0, level = 1, lines = 0, gameTime = '00:00') 
         canvas.style.pointerEvents = 'none';
     }
     
-    // Calcola i dati finali del gioco
+    // Calcola i dati finali del gioco e aggiorna la UI
     calculateGameOverData(score, level, lines, gameTime);
-    
-    // Aggiorna tutti gli elementi della schermata
     updateGameOverElements();
-    
+
     // Mostra la schermata con animazione
     overlay.classList.add('active');
-    
+
     // Aggiungi i listener per i controlli da tastiera
     addGameOverKeyboardListeners();
 
